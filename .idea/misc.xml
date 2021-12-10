@@ -9,6 +9,46 @@
         <entry key="..\:/Users/Hugo Sloot Murcia/Documents/tfg/Galeria/app/src/main/res/layout/activity_settings.xml" value="0.31657608695652173" />
         <entry key="..\:/Users/Hugo Sloot Murcia/Documents/tfg/Galeria/app/src/main/res/layout/content_main.xml" value="0.3333333333333333" />
         <entry key="..\:/Users/Hugo Sloot Murcia/Documents/tfg/Galeria/app/src/main/res/menu/user_menu.xml" value="2.203125" />
+        <entry key="..\:/Users/HugoSlootMurcia/Documents/Galeria/app/src/main/res/drawable/ic_baseline_add_24.xml" value="0.22135416666666666" />
+        <entry key="..\:/Users/HugoSlootMurcia/Documents/Galeria/app/src/main/res/drawable/ic_baseline_arrow_back_24.xml" value="0.2984375" />
+        <entry key="..\:/Users/HugoSlootMurcia/Documents/Galeria/app/src/main/res/drawable/ic_baseline_change_circle_24.xml" value="0.3828125" />
+        <entry key="..\:/Users/HugoSlootMurcia/Documents/Galeria/app/src/main/res/drawable/ic_baseline_how_to_reg_24.xml" value="0.3828125" />
+        <entry key="..\:/Users/HugoSlootMurcia/Documents/Galeria/app/src/main/res/drawable/ic_baseline_info_24.xml" value="0.2838541666666667" />
+        <entry key="..\:/Users/HugoSlootMurcia/Documents/Galeria/app/src/main/res/drawable/ic_baseline_playlist_add_24.xml" value="0.3828125" />
+        <entry key="..\:/Users/HugoSlootMurcia/Documents/Galeria/app/src/main/res/drawable/ic_baseline_plus_one_24.xml" value="0.2838541666666667" />
+        <entry key="..\:/Users/HugoSlootMurcia/Documents/Galeria/app/src/main/res/drawable/ic_baseline_refresh_24.xml" value="0.3078125" />
+        <entry key="..\:/Users/HugoSlootMurcia/Documents/Galeria/app/src/main/res/drawable/ic_baseline_remove_24.xml" value="0.2838541666666667" />
+        <entry key="..\:/Users/HugoSlootMurcia/Documents/Galeria/app/src/main/res/drawable/ic_baseline_settings_24.xml" value="0.3828125" />
+        <entry key="..\:/Users/HugoSlootMurcia/Documents/Galeria/app/src/main/res/layout/activity_categoy.xml" value="0.36666666666666664" />
+        <entry key="..\:/Users/HugoSlootMurcia/Documents/Galeria/app/src/main/res/layout/activity_login.xml" value="0.5" />
+        <entry key="..\:/Users/HugoSlootMurcia/Documents/Galeria/app/src/main/res/layout/activity_main.xml" value="0.5" />
+        <entry key="..\:/Users/HugoSlootMurcia/Documents/Galeria/app/src/main/res/layout/activity_order.xml" value="0.5" />
+        <entry key="..\:/Users/HugoSlootMurcia/Documents/Galeria/app/src/main/res/layout/activity_product.xml" value="0.36666666666666664" />
+        <entry key="..\:/Users/HugoSlootMurcia/Documents/Galeria/app/src/main/res/layout/activity_settings.xml" value="0.36666666666666664" />
+        <entry key="..\:/Users/HugoSlootMurcia/Documents/Galeria/app/src/main/res/layout/activity_splash.xml" value="0.25" />
+        <entry key="..\:/Users/HugoSlootMurcia/Documents/Galeria/app/src/main/res/layout/activity_ticket.xml" value="0.67" />
+        <entry key="..\:/Users/HugoSlootMurcia/Documents/Galeria/app/src/main/res/layout/activity_ticket_closed.xml" value="0.33" />
+        <entry key="..\:/Users/HugoSlootMurcia/Documents/Galeria/app/src/main/res/layout/activity_user.xml" value="0.36666666666666664" />
+        <entry key="..\:/Users/HugoSlootMurcia/Documents/Galeria/app/src/main/res/layout/card_categories.xml" value="0.29635416666666664" />
+        <entry key="..\:/Users/HugoSlootMurcia/Documents/Galeria/app/src/main/res/layout/card_products.xml" value="0.67" />
+        <entry key="..\:/Users/HugoSlootMurcia/Documents/Galeria/app/src/main/res/layout/card_products_category.xml" value="0.28072916666666664" />
+        <entry key="..\:/Users/HugoSlootMurcia/Documents/Galeria/app/src/main/res/layout/card_selected_products.xml" value="0.49085365853658536" />
+        <entry key="..\:/Users/HugoSlootMurcia/Documents/Galeria/app/src/main/res/layout/card_ticket_products.xml" value="0.5" />
+        <entry key="..\:/Users/HugoSlootMurcia/Documents/Galeria/app/src/main/res/layout/card_tickets_closed.xml" value="0.67" />
+        <entry key="..\:/Users/HugoSlootMurcia/Documents/Galeria/app/src/main/res/layout/card_top_products.xml" value="0.6307086614173228" />
+        <entry key="..\:/Users/HugoSlootMurcia/Documents/Galeria/app/src/main/res/layout/card_user.xml" value="0.28804347826086957" />
+        <entry key="..\:/Users/HugoSlootMurcia/Documents/Galeria/app/src/main/res/layout/category_dialog.xml" value="0.20520833333333333" />
+        <entry key="..\:/Users/HugoSlootMurcia/Documents/Galeria/app/src/main/res/layout/list_category.xml" value="0.36186594202898553" />
+        <entry key="..\:/Users/HugoSlootMurcia/Documents/Galeria/app/src/main/res/layout/options_dialog.xml" value="0.5" />
+        <entry key="..\:/Users/HugoSlootMurcia/Documents/Galeria/app/src/main/res/layout/payment_dialog.xml" value="0.20520833333333333" />
+        <entry key="..\:/Users/HugoSlootMurcia/Documents/Galeria/app/src/main/res/layout/product_dialog.xml" value="0.33" />
+        <entry key="..\:/Users/HugoSlootMurcia/Documents/Galeria/app/src/main/res/layout/select_order_dialog.xml" value="0.67" />
+        <entry key="..\:/Users/HugoSlootMurcia/Documents/Galeria/app/src/main/res/layout/ticket_dialog.xml" value="0.33" />
+        <entry key="..\:/Users/HugoSlootMurcia/Documents/Galeria/app/src/main/res/layout/user_dialog.xml" value="0.365036231884058" />
+        <entry key="..\:/Users/HugoSlootMurcia/Documents/Galeria/app/src/main/res/menu/activity_main_drawer.xml" value="0.36666666666666664" />
+        <entry key="..\:/Users/HugoSlootMurcia/Documents/Galeria/app/src/main/res/menu/main.xml" value="0.36666666666666664" />
+        <entry key="..\:/Users/HugoSlootMurcia/Documents/Galeria/app/src/main/res/menu/search_menu.xml" value="0.36666666666666664" />
+        <entry key="..\:/Users/HugoSlootMurcia/Documents/Galeria/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml" value="0.1625" />
       </map>
     </option>
   </component>
