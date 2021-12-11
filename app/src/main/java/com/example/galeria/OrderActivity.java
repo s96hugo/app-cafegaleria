@@ -96,7 +96,7 @@ public class OrderActivity extends AppCompatActivity implements OnRefreshDataOrd
         products = new ArrayList<>();
 
         //Instancia rv top productos
-        mrv = (RecyclerView) findViewById(R.id.idRecyclerViewTopProd);
+        mrv = (RecyclerView)findViewById(R.id.idRecyclerViewTopProd);
         mrv.setHasFixedSize(true);
         mrv.setLayoutManager(new GridLayoutManager(this, 3));
 
@@ -112,7 +112,6 @@ public class OrderActivity extends AppCompatActivity implements OnRefreshDataOrd
         imswitch = findViewById(R.id.imSwitch);
         tipoVisible = findViewById(R.id.tvPedir);
         imhome = findViewById(R.id.imHome);
-
         imhome.setVisibility(View.INVISIBLE);
 
 
@@ -131,9 +130,8 @@ public class OrderActivity extends AppCompatActivity implements OnRefreshDataOrd
         numerTicket.setText("Pedido " + mesa);
 
         //Rellenar el DS
-        getTopProd();
-        getCategories();
-        getProducts();
+        getDataSet();//getTopProd(); getCategories(); getProducts();
+
 
         bcuenta.setOnClickListener(view -> {
             showPaymentDialog(currentTicket.getId());
@@ -394,7 +392,169 @@ public class OrderActivity extends AppCompatActivity implements OnRefreshDataOrd
         rq.add(req);
     }
 
+    //DataSet
+    private void getDataSet(){
+        topProd.clear();
+        categories.clear();
+        products.clear();
+        JsonObjectRequest requ = new JsonObjectRequest(Request.Method.GET,
+                Constant.DATA_SET,
+                null,
+                new Response.Listener<JSONObject>() {
+                    @Override
+                    public void onResponse(JSONObject response) {
+                        try {
+                            if (response.getBoolean("success")) {
 
+                                //Cargar MostPopular
+                                JSONArray ListProd = new JSONArray(response.getString("mostPopular"));
+                                for(int i = 0; i< ListProd.length();i++){
+                                    JSONObject prod = ListProd.getJSONObject(i);
+                                    Gson gson = new Gson();
+                                    Product product = gson.fromJson(prod.toString(), Product.class);
+                                    topProd.add(product);
+                                }
+                                adapt = new MostPopularAdapter(OrderActivity.this,topProd);
+                                mrv.setAdapter(adapt);
+
+                                //CargarCategorias
+                                JSONArray listCat = new JSONArray(response.getString("categories"));
+
+                                for(int i = 0; i< listCat.length();i++) {
+                                    JSONObject cat = listCat.getJSONObject(i);
+                                    Gson gson = new Gson();
+                                    Category category = gson.fromJson(cat.toString(), Category.class);
+                                    categories.add(category);
+                                }
+
+                                //Productos
+                                JSONArray  array= new JSONArray(response.getString("products"));
+                                for(int i = 0 ; i<array.length(); i++){
+                                    JSONObject pr = array.getJSONObject(i);
+                                    products.add(new Product(pr.getInt("id"),
+                                            pr.getString("name"),
+                                            pr.getString("price"),
+                                            pr.getInt("category_id"),
+                                            pr.getString("category")) );
+                                }
+
+                            } else {
+
+                                if(!response.getBoolean("token")){
+                                    Toast.makeText(getApplicationContext(), "Sesión caducada", Toast.LENGTH_SHORT).show();
+                                    Intent intent = new Intent(OrderActivity.this, LoginActivity.class);
+                                    startActivity(intent);
+
+                                } else {
+                                    Toast.makeText(getApplicationContext(), "Error inesperado", Toast.LENGTH_SHORT).show();
+                                }
+
+                            }
+                        } catch (JSONException e) {
+                            Toast.makeText(getApplicationContext(), e.toString(), Toast.LENGTH_SHORT).show();
+                            e.printStackTrace();
+                        }
+                    }
+                }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                Toast.makeText(getApplicationContext(), "Error de conexión o datos incorrectos", Toast.LENGTH_SHORT).show();
+            }
+        }) {
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                String token = sharedPreferences.getString("token", "");
+                HashMap<String, String> map = new HashMap<>();
+                map.put("Authorization", "Bearer " + token);
+                return map;
+            }
+        };
+        rq.add(requ);
+    }
+
+
+    //Si está visible el botón de atrás (para volver a las categorías) te vuelve a las categorías, si no te manta al main activity
+    @Override
+    public void onBackPressed() {
+        if(imhome.getVisibility() == View.VISIBLE){
+            imhome.setVisibility(View.INVISIBLE);
+            tipoVisible.setText("Todos los productos");
+            coa = new CategoryOrderAdapter(categories, products, OrderActivity.this);
+            mrv.setAdapter(coa);
+
+        } else {
+            Intent intent = new Intent(OrderActivity.this, MainActivity.class);
+            startActivity(intent);
+        }
+    }
+
+    //Métodos de las interfaces para refrescar los datos de mi lista de productos pedidos
+    @Override
+    public void refreshData(int product_id, int units, String comment, String name) {
+
+        ProductOrder productOrder = new ProductOrder(0,
+                units,
+                comment,
+                name,
+                product_id,
+                0);
+
+        if(pedido.contains(productOrder)){
+            int total = productOrder.getUnits() + pedido.get(pedido.indexOf(productOrder)).getUnits();
+            pedido.get(pedido.indexOf(productOrder)).setUnits(total);
+        }else{
+            pedido.add(0,productOrder);
+        }
+        oadapt = new OrderedAdapter(OrderActivity.this, pedido);
+        orv.setAdapter(oadapt);
+    }
+
+    @Override
+    public void refreshCurrent(int product_id, int units, String comment, String name) {
+
+        ProductOrder productOrder = new ProductOrder(0,
+                units,
+                comment,
+                name,
+                product_id,
+                0);
+
+        if(pedido.contains(productOrder) && productOrder.getComment().isEmpty()){
+
+        }else if(pedido.contains(productOrder) && !productOrder.getComment().isEmpty()){
+            pedido.get(pedido.indexOf(productOrder)).setComment(productOrder.getComment());
+
+        }else{
+            pedido.add(0,productOrder);
+        }
+
+        oadapt = new OrderedAdapter(OrderActivity.this, pedido);
+        orv.setAdapter(oadapt);
+
+    }
+
+    @Override
+    public void deleteProductOrdered(int position) {
+        pedido.remove(position);
+        oadapt = new OrderedAdapter(OrderActivity.this, pedido);
+        orv.setAdapter(oadapt);
+    }
+
+    @Override
+    public void productsByCategory(List<Product> products) {
+        if(products.isEmpty()){
+            tipoVisible.setText("Esta categoría no tiene productos");
+        } else {
+            tipoVisible.setText("Todos los productos > " + products.get(0).getCategory());
+        }
+
+        imhome.setVisibility(View.VISIBLE);
+        pbca = new ProductByCategoryAdapter(products, OrderActivity.this);
+        mrv.setAdapter(pbca);
+
+    }
+
+    /*
     private void getTopProd() {
         JsonObjectRequest requ = new JsonObjectRequest(Request.Method.GET,
                 Constant.TOP_PRODUCTS,
@@ -556,85 +716,5 @@ public class OrderActivity extends AppCompatActivity implements OnRefreshDataOrd
         };
         rq.add(request);
     }
-
-    //Si está visible el botón de atrás (para volver a las categorías) te vuelve a las categorías, si no te manta al main activity
-    @Override
-    public void onBackPressed() {
-        if(imhome.getVisibility() == View.VISIBLE){
-            imhome.setVisibility(View.INVISIBLE);
-            tipoVisible.setText("Todos los productos");
-            coa = new CategoryOrderAdapter(categories, products, OrderActivity.this);
-            mrv.setAdapter(coa);
-
-        } else {
-            Intent intent = new Intent(OrderActivity.this, MainActivity.class);
-            startActivity(intent);
-        }
-    }
-
-    //Métodos de las interfaces para refrescar los datos de mi lista de productos pedidos
-    @Override
-    public void refreshData(int product_id, int units, String comment, String name) {
-
-        ProductOrder productOrder = new ProductOrder(0,
-                units,
-                comment,
-                name,
-                product_id,
-                0);
-
-        if(pedido.contains(productOrder)){
-            int total = productOrder.getUnits() + pedido.get(pedido.indexOf(productOrder)).getUnits();
-            pedido.get(pedido.indexOf(productOrder)).setUnits(total);
-        }else{
-            pedido.add(0,productOrder);
-        }
-        oadapt = new OrderedAdapter(OrderActivity.this, pedido);
-        orv.setAdapter(oadapt);
-    }
-
-    @Override
-    public void refreshCurrent(int product_id, int units, String comment, String name) {
-
-        ProductOrder productOrder = new ProductOrder(0,
-                units,
-                comment,
-                name,
-                product_id,
-                0);
-
-        if(pedido.contains(productOrder) && productOrder.getComment().isEmpty()){
-
-        }else if(pedido.contains(productOrder) && !productOrder.getComment().isEmpty()){
-            pedido.get(pedido.indexOf(productOrder)).setComment(productOrder.getComment());
-
-        }else{
-            pedido.add(0,productOrder);
-        }
-
-        oadapt = new OrderedAdapter(OrderActivity.this, pedido);
-        orv.setAdapter(oadapt);
-
-    }
-
-    @Override
-    public void deleteProductOrdered(int position) {
-        pedido.remove(position);
-        oadapt = new OrderedAdapter(OrderActivity.this, pedido);
-        orv.setAdapter(oadapt);
-    }
-
-    @Override
-    public void productsByCategory(List<Product> products) {
-        if(products.isEmpty()){
-            tipoVisible.setText("Esta categoría no tiene productos");
-        } else {
-            tipoVisible.setText("Todos los productos > " + products.get(0).getCategory());
-        }
-
-        imhome.setVisibility(View.VISIBLE);
-        pbca = new ProductByCategoryAdapter(products, OrderActivity.this);
-        mrv.setAdapter(pbca);
-
-    }
+     */
 }

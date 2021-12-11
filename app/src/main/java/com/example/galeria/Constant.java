@@ -19,6 +19,7 @@ public class Constant {
     public static final String CREATE_PRODUCT = HOME+"/products/create";
     public static final String PRODUCTS_AND_CATEGORIES = HOME+"/products";
     public static final String TOP_PRODUCTS = HOME+"/products/popular";
+    public static final String DATA_SET = HOME+"/productsDataSet";
 
     //tickets
     public static final String CREATE_TICKET = HOME+"/tickets/create";

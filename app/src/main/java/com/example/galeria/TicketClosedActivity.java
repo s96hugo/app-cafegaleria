@@ -1,5 +1,6 @@
 package com.example.galeria;
 
+import android.app.Dialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -8,7 +9,9 @@ import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
+import android.view.Window;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -38,7 +41,7 @@ import java.util.Map;
 
 public class TicketClosedActivity extends AppCompatActivity {
 
-    TextView numero, fecha, mesa, tipo, total;
+    TextView numero, fecha, mesa, tipo, total, cambio;
     Button back;
     ImageButton vuelta;
     Ticket currentTicket;
@@ -57,6 +60,7 @@ public class TicketClosedActivity extends AppCompatActivity {
         mesa =findViewById(R.id.tvTable);
         tipo = findViewById(R.id.tvTipoPago);
         total = findViewById(R.id.tvTotal);
+        cambio = findViewById(R.id.tvVuelta);
         back = findViewById(R.id.bvolver);
         vuelta = findViewById(R.id.ibVuelta);
 
@@ -76,7 +80,12 @@ public class TicketClosedActivity extends AppCompatActivity {
         tipo.setText("Pagado " + currentTicket.getPayment().toLowerCase());
         total.setText("Total: " + String.format("%.2f",currentTicket.getTotal()) + "€");
 
+        //Vuelta se vuelve visible si se paga en efectivo
         if(currentTicket.getPayment().equals("en efectivo")) vuelta.setVisibility(View.VISIBLE);
+
+        vuelta.setOnClickListener(view -> {
+            showExchangeDialog();
+        });
 
 
         // Ver quien llama a la clase
@@ -163,6 +172,35 @@ public class TicketClosedActivity extends AppCompatActivity {
 
         }
 
+    }
+
+    private void showExchangeDialog() {
+        final Dialog dialog = new Dialog(TicketClosedActivity.this);
+        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+        dialog.setCancelable(true);
+        dialog.setContentView(R.layout.category_dialog);
+        dialog.show();
+
+        EditText tx = dialog.findViewById(R.id.etCategory);
+        Button addd = dialog.findViewById(R.id.badd);
+        tx.setHint("Calcular devolución");
+        addd.setText("Calcula");
+
+        addd.setOnClickListener(view -> {
+            if(tx.getText().toString().isEmpty()){
+                Toast.makeText(getApplicationContext(), "Introduzca cantidad pagada por el cliente", Toast.LENGTH_SHORT).show();
+
+            } else {
+                try{
+                    cambio.setText("Entrega " + tx.getText().toString()+ "€  ➝  Devolver " + String.format("%.2f",Double.parseDouble(tx.getText().toString()) - currentTicket.getTotal()) + "€");
+                    dialog.dismiss();
+
+                } catch (Exception e) {
+                    Toast.makeText(getApplicationContext(), "Formato incorrecto", Toast.LENGTH_SHORT).show();
+                }
+            }
+
+        });
     }
 
     @Override
