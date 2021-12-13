@@ -1,6 +1,8 @@
 package com.example.galeria.models;
 
-public class ProductOrder {
+import java.io.Serializable;
+
+public class ProductOrder implements Serializable {
     private int id;
     private int units;
     private String comment;
@@ -82,14 +84,9 @@ public class ProductOrder {
 
     @Override
     public String toString() {
-        return "ProductOrder{" +
-                "id=" + id +
-                ", units=" + units +
-                ", comment='" + comment + '\'' +
-                ", name='" + name + '\'' +
-                ", product_id=" + product_id +
-                ", order_id=" + order_id +
-                '}';
+        String salida = "";
+        salida = comment.equals("") ? name : name + "  -  " + comment;
+        return  units + " x " + salida;
     }
 
 

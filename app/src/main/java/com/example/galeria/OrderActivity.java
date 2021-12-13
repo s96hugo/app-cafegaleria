@@ -78,6 +78,7 @@ public class OrderActivity extends AppCompatActivity implements OnRefreshDataOrd
     private CategoryOrderAdapter coa;
     private ProductByCategoryAdapter pbca;
 
+    String mesa;
     Ticket currentTicket;
 
     boolean visible = true;
@@ -121,13 +122,13 @@ public class OrderActivity extends AppCompatActivity implements OnRefreshDataOrd
     protected void onResume() {
         super.onResume();
 
-        //Traer datos del main activity
-        String mesa = (String) getIntent().getSerializableExtra("pedido");
+        //Traer datos del main activity o StateOrderActivity
+        mesa = (String) getIntent().getSerializableExtra("pedido");
         currentTicket = (Ticket) getIntent().getSerializableExtra("ticket");
         sharedPreferences = getApplicationContext().getSharedPreferences("user", Context.MODE_PRIVATE);
 
 
-        numerTicket.setText("Pedido " + mesa);
+        numerTicket.setText("Comanda " + mesa);
 
         //Rellenar el DS
         getDataSet();//getTopProd(); getCategories(); getProducts();
@@ -142,7 +143,10 @@ public class OrderActivity extends AppCompatActivity implements OnRefreshDataOrd
             if(pedido.isEmpty()){
                 Toast.makeText(getApplicationContext(), "Añade productos para hacer un pedido", Toast.LENGTH_SHORT).show();
             } else {
-                createOrder();
+                //createOrder();
+                bpedir.setClickable(false);
+                //bpedir.setVisibility(View.INVISIBLE);
+                createProductOrder();
             }
         });
 
@@ -173,6 +177,14 @@ public class OrderActivity extends AppCompatActivity implements OnRefreshDataOrd
             coa = new CategoryOrderAdapter(categories, products, OrderActivity.this);
             mrv.setAdapter(coa);
 
+        });
+
+        bticket.setOnClickListener(view -> {
+            Intent intent = new Intent(OrderActivity.this, StateOrderActivity.class);
+            intent.putExtra("ticket", currentTicket);
+            intent.putExtra("pedido", (String) getIntent().getSerializableExtra("pedido"));
+            intent.putExtra("call", 0);
+            startActivity(intent);
         });
     }
 
@@ -271,63 +283,8 @@ public class OrderActivity extends AppCompatActivity implements OnRefreshDataOrd
         rq.add(req);
     }
 
-    private void createOrder() {
-        Map<String, String> datos = new HashMap<String, String>();
-        datos.put("ticket_id", String.valueOf(currentTicket.getId()));
-        datos.put("user_id", String.valueOf(sharedPreferences.getString("id", "")));
-        JSONObject datosJs = new JSONObject(datos);
 
-        JsonObjectRequest req = new JsonObjectRequest(Request.Method.POST,
-                Constant.HOME+"/orders/create",
-                datosJs,
-                new Response.Listener<JSONObject>() {
-                    @Override
-                    public void onResponse(JSONObject response) {
-                        try {
-                            if (response.getBoolean("success")) {
-                                JSONObject o = response.getJSONObject("order");
-                                Gson gson = new Gson();
-                                Order order = gson.fromJson(o.toString(), Order.class);
-
-                                createProductOrder(order);
-
-                            } else {
-
-                                if(!response.getBoolean("token")){
-                                    Toast.makeText(getApplicationContext(), "Sesión caducada", Toast.LENGTH_SHORT).show();
-                                    Intent intent = new Intent(OrderActivity.this, LoginActivity.class);
-                                    startActivity(intent);
-
-                                } else {
-                                    Toast.makeText(getApplicationContext(), "Error inesperado", Toast.LENGTH_SHORT).show();
-                                }
-
-                            }
-                        } catch (JSONException e) {
-                            Toast.makeText(getApplicationContext(), e.toString(), Toast.LENGTH_SHORT).show();
-                            e.printStackTrace();
-                        }
-                    }
-                }, new Response.ErrorListener() {
-            @Override
-            public void onErrorResponse(VolleyError error) {
-                Toast.makeText(getApplicationContext(), "Error de conexión o datos incorrectos", Toast.LENGTH_SHORT).show();
-            }
-        }) {
-            @Override
-            public Map<String, String> getHeaders() throws AuthFailureError {
-                String token = sharedPreferences.getString("token", "");
-                HashMap<String, String> map = new HashMap<>();
-                map.put("Authorization", "Bearer " + token);
-                return map;
-            }
-        };
-        rq.add(req);
-    }
-
-
-
-    public void createProductOrder(Order order){
+    public void createProductOrder(){
 
         JSONArray send = new JSONArray();
         Map<String, String> datos = new HashMap<String, String>();
@@ -337,7 +294,11 @@ public class OrderActivity extends AppCompatActivity implements OnRefreshDataOrd
             datos.put("product_id", String.valueOf(po.getProduct_id()));
             datos.put("units", String.valueOf(po.getUnits()));
             datos.put("comment", po.getComment());
-            datos.put("order_id", String.valueOf(order.getId()));
+            //datos.put("order_id", String.valueOf(order.getId()));
+
+            datos.put("ticket_id", String.valueOf(currentTicket.getId()));
+            datos.put("user_id", String.valueOf(sharedPreferences.getString("id", "")));
+
             JSONObject datoJS = new JSONObject(datos);
             send.put(datoJS);
         }
@@ -352,8 +313,24 @@ public class OrderActivity extends AppCompatActivity implements OnRefreshDataOrd
                         try {
                             JSONObject success = response.getJSONObject(0);
                             if (success.getBoolean("success")){
-                                Toast.makeText(getApplicationContext(), "Pedido creado", Toast.LENGTH_SHORT).show();
-                                Intent intent = new Intent(OrderActivity.this, MainActivity.class);
+
+                                List<ProductOrder> prods = new ArrayList<>();
+                                Gson gson = new Gson();
+                                JSONObject productOrders = response.getJSONObject(1);
+                                JSONArray jsonArray = productOrders.getJSONArray("ticketOrderInfo");
+                                for(int i = 0; i< jsonArray.length();i++){
+                                    JSONObject prod = jsonArray.getJSONObject(i);
+                                    ProductOrder po = gson.fromJson(prod.toString(), ProductOrder.class);
+                                    prods.add(po);
+                                }
+
+                                bpedir.setClickable(true);
+                                //bpedir.setVisibility(View.VISIBLE);
+                                Intent intent = new Intent(OrderActivity.this, StateOrderActivity.class);
+                                intent.putExtra("call", 1);
+                                intent.putExtra("ticket", currentTicket);
+                                intent.putExtra("pedido", mesa);
+                                intent.putExtra("datos", (Serializable) prods);
                                 startActivity(intent);
 
                             } else {
@@ -555,6 +532,62 @@ public class OrderActivity extends AppCompatActivity implements OnRefreshDataOrd
     }
 
     /*
+
+    private void createOrder() {
+        Map<String, String> datos = new HashMap<String, String>();
+        datos.put("ticket_id", String.valueOf(currentTicket.getId()));
+        datos.put("user_id", String.valueOf(sharedPreferences.getString("id", "")));
+        JSONObject datosJs = new JSONObject(datos);
+
+        JsonObjectRequest req = new JsonObjectRequest(Request.Method.POST,
+                Constant.HOME+"/orders/create",
+                datosJs,
+                new Response.Listener<JSONObject>() {
+                    @Override
+                    public void onResponse(JSONObject response) {
+                        try {
+                            if (response.getBoolean("success")) {
+                                JSONObject o = response.getJSONObject("order");
+                                Gson gson = new Gson();
+                                Order order = gson.fromJson(o.toString(), Order.class);
+
+                                //createProductOrder(order);
+
+                            } else {
+
+                                if(!response.getBoolean("token")){
+                                    Toast.makeText(getApplicationContext(), "Sesión caducada", Toast.LENGTH_SHORT).show();
+                                    Intent intent = new Intent(OrderActivity.this, LoginActivity.class);
+                                    startActivity(intent);
+
+                                } else {
+                                    Toast.makeText(getApplicationContext(), "Error inesperado", Toast.LENGTH_SHORT).show();
+                                }
+
+                            }
+                        } catch (JSONException e) {
+                            Toast.makeText(getApplicationContext(), e.toString(), Toast.LENGTH_SHORT).show();
+                            e.printStackTrace();
+                        }
+                    }
+                }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                Toast.makeText(getApplicationContext(), "Error de conexión o datos incorrectos", Toast.LENGTH_SHORT).show();
+            }
+        }) {
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                String token = sharedPreferences.getString("token", "");
+                HashMap<String, String> map = new HashMap<>();
+                map.put("Authorization", "Bearer " + token);
+                return map;
+            }
+        };
+        rq.add(req);
+    }
+
+
     private void getTopProd() {
         JsonObjectRequest requ = new JsonObjectRequest(Request.Method.GET,
                 Constant.TOP_PRODUCTS,

@@ -107,15 +107,15 @@
 
     <ImageButton
         android:id="@+id/ibVuelta"
-        android:layout_width="42dp"
-        android:layout_height="40dp"
+        android:layout_width="51dp"
+        android:layout_height="52dp"
         android:backgroundTint="@color/defecto"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.043"
+        app:layout_constraintHorizontal_bias="0.956"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.807"
+        app:layout_constraintVertical_bias="0.023"
         app:srcCompat="@drawable/ic_baseline_attach_money_24" />
 
     <TextView

@@ -13,6 +13,10 @@
         android:theme="@style/Theme.Galeria"
         android:usesCleartextTraffic="true">
         <activity
+            android:name=".StateOrderActivity"
+            android:exported="true"
+            android:theme="@style/Theme.Galeria.NoActionBar" />
+        <activity
             android:name=".SplashActivity"
             android:exported="true"
             android:theme="@style/Theme.Galeria.NoActionBar">
@@ -22,7 +26,6 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
         <activity
             android:name=".TicketClosedActivity"
             android:exported="true"
@@ -63,8 +66,7 @@
         <activity
             android:name=".LoginActivity"
             android:exported="true"
-            android:theme="@style/Theme.Galeria.NoActionBar"/>
-
+            android:theme="@style/Theme.Galeria.NoActionBar" />
     </application>
 
 </manifest>
