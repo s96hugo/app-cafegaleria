@@ -37,6 +37,7 @@ import com.android.volley.toolbox.Volley;
 import com.example.galeria.adapters.CategoryAdapter;
 import com.example.galeria.adapters.ProductAdapter;
 import com.example.galeria.interfaces.OnRefreshViewListener;
+import com.example.galeria.interfaces.OpenProductsByCategory;
 import com.example.galeria.models.Category;
 
 import org.json.JSONException;
@@ -44,6 +45,8 @@ import org.json.JSONObject;
 import org.json.JSONArray;
 
 import com.example.galeria.models.Product;
+import com.example.galeria.models.Ticket;
+import com.example.galeria.models.User;
 import com.google.gson.Gson;
 
 import java.util.ArrayList;
@@ -80,7 +83,6 @@ public class ProductActivity extends AppCompatActivity implements OnRefreshViewL
         categorias = new ArrayList<>();
         products = new ArrayList<>();
         getProducts();
-        getCategories();
 
         swipeRefreshLayout = (SwipeRefreshLayout)findViewById(R.id.srlProduct);
         swipeRefreshLayout.setColorSchemeResources(R.color.black);
@@ -94,16 +96,12 @@ public class ProductActivity extends AppCompatActivity implements OnRefreshViewL
 
         add_.setOnClickListener(view -> {
             showCreateProductDialog();
-            getProducts();
         });
 
         swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
                 getProducts();
-                getCategories();
-                adapt.notifyDataSetChanged();
-                swipeRefreshLayout.setRefreshing(false);
             }
         });
     }
@@ -153,7 +151,15 @@ public class ProductActivity extends AppCompatActivity implements OnRefreshViewL
                     public void onResponse(JSONObject response) {
                         try {
                             if (response.getBoolean("success")) {
-                                getProducts();
+                                JSONArray jsonArray = response.getJSONArray("product");
+                                Gson gson = new Gson();
+                                for (int i = 0 ; i<jsonArray.length(); i++) {
+                                    JSONObject jsonObject = jsonArray.getJSONObject(i);
+                                    Product product = gson.fromJson(jsonObject.toString(), Product.class);
+                                    products.add(product);
+                                }
+
+                                refreshProduct(products,categorias);
                                 Toast.makeText(getApplicationContext(), "Producto Añadida", Toast.LENGTH_SHORT).show();
 
                             } else {
@@ -190,62 +196,8 @@ public class ProductActivity extends AppCompatActivity implements OnRefreshViewL
         rq.add(req);
     }
 
-    public void getCategories() {
-        categorias.clear();
-
-        JsonObjectRequest req = new JsonObjectRequest(Request.Method.GET,
-                Constant.GET_ALL_CATEGORY,
-                null,
-                new Response.Listener<JSONObject>() {
-                    @Override
-                    public void onResponse(JSONObject response) {
-                        try {
-                            if (response.getBoolean("success")) {
-
-                                JSONArray listCat = new JSONArray(response.getString("categories"));
-
-                                for(int i = 0; i< listCat.length();i++){
-                                    JSONObject cat = listCat.getJSONObject(i);
-                                    Gson gson = new Gson();
-                                    Category category = gson.fromJson(cat.toString(),Category.class);
-                                    categorias.add(category);
-                                }
-
-                            } else {
-
-                                if(!response.getBoolean("token")){
-                                    Toast.makeText(getApplicationContext(), "Sesión caducada", Toast.LENGTH_SHORT).show();
-                                    Intent intent = new Intent(ProductActivity.this, LoginActivity.class);
-                                    startActivity(intent);
-
-                                } else {
-                                    Toast.makeText(getApplicationContext(), "Error inesperado", Toast.LENGTH_SHORT).show();
-                                }
-
-                            }
-                        } catch (JSONException e) {
-                            Toast.makeText(getApplicationContext(), e.toString(), Toast.LENGTH_SHORT).show();
-                            e.printStackTrace();
-                        }
-                    }
-                }, new Response.ErrorListener() {
-            @Override
-            public void onErrorResponse(VolleyError error) {
-                Toast.makeText(getApplicationContext(), "Error de conexión", Toast.LENGTH_SHORT).show();
-            }
-        }) {
-            @Override
-            public Map<String, String> getHeaders() throws AuthFailureError {
-                String token = sharedPreferences.getString("token", "");
-                HashMap<String, String> map = new HashMap<>();
-                map.put("Authorization", "Bearer " + token);
-                return map;
-            }
-        };
-        rqc.add(req);
-    }
-
     private void getProducts() {
+        categorias.clear();
         products.clear();
         StringRequest request = new StringRequest(Request.Method.GET, Constant.PRODUCTS_AND_CATEGORIES, new Response.Listener<String>() {
             @Override
@@ -263,21 +215,24 @@ public class ProductActivity extends AppCompatActivity implements OnRefreshViewL
                                                     pr.getString("category")) );
                         }
 
-                        adapt = new ProductAdapter(products,ProductActivity.this, categorias);
-                        mrv.setAdapter(adapt);
+                        JSONArray listCat = new JSONArray(res.getString("categories"));
+
+                        for(int i = 0; i< listCat.length();i++){
+                            JSONObject cat = listCat.getJSONObject(i);
+                            Gson gson = new Gson();
+                            Category category = gson.fromJson(cat.toString(),Category.class);
+                            categorias.add(category);
+                        }
+                        refreshProduct(products,categorias);
                     }
-
                     else {
-
                         if(!res.getBoolean("token")){
                             Toast.makeText(getApplicationContext(), "Sesión caducada", Toast.LENGTH_SHORT).show();
                             Intent intent = new Intent(ProductActivity.this, LoginActivity.class);
                             startActivity(intent);
-
                         } else {
                             Toast.makeText(getApplicationContext(), "Error inesperado", Toast.LENGTH_SHORT).show();
                         }
-
                     }
 
                 } catch (JSONException e) {
@@ -305,7 +260,26 @@ public class ProductActivity extends AppCompatActivity implements OnRefreshViewL
 
     @Override
     public void refreshView() {
+        //Desuso
         getProducts();
+    }
+
+    @Override
+    public void refreshCategory(List<Category> categories) {
+        //Implementado en CategoryActivity
+    }
+
+    @Override
+    public void refreshProduct(List<Product> products, List<Category> categories) {
+        adapt = new ProductAdapter(products,ProductActivity.this, categories);
+        mrv.setAdapter(adapt);
+        adapt.notifyDataSetChanged();
+        swipeRefreshLayout.setRefreshing(false);
+    }
+
+    @Override
+    public void refreshUsers(List<User> users) {
+
     }
 
     @Override
@@ -330,4 +304,5 @@ public class ProductActivity extends AppCompatActivity implements OnRefreshViewL
         });
         return true;
     }
+
 }

@@ -37,7 +37,7 @@ public class CategoryOrderAdapter extends RecyclerView.Adapter<CategoryOrderAdap
     @NonNull
     @Override
     public CategoryViewHolder onCreateViewHolder(@NonNull ViewGroup viewGroup, int i) {
-        View categoryView = LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.card_categories, viewGroup, false);
+        View categoryView = LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.card_categories_order, viewGroup, false);
         CategoryViewHolder cvh = new CategoryViewHolder(categoryView);
         return cvh;
     }
@@ -75,8 +75,9 @@ public class CategoryOrderAdapter extends RecyclerView.Adapter<CategoryOrderAdap
 
         public CategoryViewHolder(@NonNull View itemView) {
             super(itemView);
-            idCateName = itemView.findViewById(R.id.idCateName);
-            cel = itemView.findViewById(R.id.idTopLayout);
+            idCateName = itemView.findViewById(R.id.tvCatOrd);
+            idCateName.setTextSize(15);
+            cel = itemView.findViewById(R.id.idLatoutCatOrd);
         }
     }
 }

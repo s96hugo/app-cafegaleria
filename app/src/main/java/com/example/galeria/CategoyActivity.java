@@ -33,6 +33,8 @@ import com.android.volley.toolbox.Volley;
 import com.example.galeria.adapters.CategoryAdapter;
 import com.example.galeria.interfaces.OnRefreshViewListener;
 import com.example.galeria.models.Category;
+import com.example.galeria.models.Product;
+import com.example.galeria.models.User;
 import com.google.gson.Gson;
 
 import org.json.JSONArray;
@@ -86,8 +88,6 @@ public class CategoyActivity extends AppCompatActivity implements OnRefreshViewL
             @Override
             public void onRefresh() {
                 getCategories();
-                adapt.notifyDataSetChanged();
-                swipeRefreshLayout.setRefreshing(false);
             }
         });
 
@@ -128,6 +128,10 @@ public class CategoyActivity extends AppCompatActivity implements OnRefreshViewL
                         try {
                             if (response.getBoolean("success")) {
 
+                                JSONObject jsonObject = new JSONObject(response.toString());
+                                Gson gson = new Gson();
+                                Category category = gson.fromJson(jsonObject.toString(), Category.class);
+                                list.add(category);
                                 Toast.makeText(getApplicationContext(), "Categoría Añadida", Toast.LENGTH_SHORT).show();
                                 getCategories();
 
@@ -184,8 +188,7 @@ public class CategoyActivity extends AppCompatActivity implements OnRefreshViewL
                                     Category category = gson.fromJson(cat.toString(), Category.class);
                                     list.add(category);
                                 }
-                                adapt = new CategoryAdapter(list,CategoyActivity.this);
-                                mrv.setAdapter(adapt);
+                                refreshCategory(list);
 
                             } else {
 
@@ -223,6 +226,24 @@ public class CategoyActivity extends AppCompatActivity implements OnRefreshViewL
     @Override
     public void refreshView() {
         getCategories();
+    }
+
+    @Override
+    public void refreshCategory(List<Category> categories) {
+        adapt = new CategoryAdapter(categories,CategoyActivity.this);
+        mrv.setAdapter(adapt);
+        adapt.notifyDataSetChanged();
+        swipeRefreshLayout.setRefreshing(false);
+    }
+
+    @Override
+    public void refreshProduct(List<Product> products, List<Category> categories) {
+
+    }
+
+    @Override
+    public void refreshUsers(List<User> users) {
+
     }
 
     @Override

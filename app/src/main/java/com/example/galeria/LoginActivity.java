@@ -101,10 +101,10 @@ public class LoginActivity extends AppCompatActivity {
                                 finish();
                             }
                             else{
-                                Toast.makeText(getApplicationContext(), "Usuario o contraseña incorrectos", Toast.LENGTH_SHORT).show();
+                                Toast.makeText(getApplicationContext(), "Usuario o contraseña incorrecto", Toast.LENGTH_SHORT).show();
                             }
                         } catch (JSONException e) {
-                            Toast.makeText(getApplicationContext(), "Login error", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(getApplicationContext(), e.toString(), Toast.LENGTH_SHORT).show();
                             e.printStackTrace();
                         }
 

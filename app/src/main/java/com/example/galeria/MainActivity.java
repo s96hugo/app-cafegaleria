@@ -141,7 +141,7 @@ public class MainActivity extends AppCompatActivity {
                 }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
-                Toast.makeText(getApplicationContext(), "Error de conexión", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getApplicationContext(), "Error de conexión o datos incorrectos", Toast.LENGTH_SHORT).show();
             }
         }) {
             @Override
@@ -205,7 +205,7 @@ public class MainActivity extends AppCompatActivity {
                                     startActivity(intent);
 
                                 } else {
-                                    Toast.makeText(getApplicationContext(), "Ya existe un ticket en esta mesa", Toast.LENGTH_SHORT).show();
+                                    Toast.makeText(getApplicationContext(), "Ya existe un ticket en esta mesa", Toast.LENGTH_LONG).show();
                                 }
                             }
 
@@ -218,7 +218,7 @@ public class MainActivity extends AppCompatActivity {
                 }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
-                Toast.makeText(getApplicationContext(), "Error de conexión", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getApplicationContext(), "Error de conexión o datos incorrectos", Toast.LENGTH_SHORT).show();
             }
         }) {
         @Override
@@ -276,8 +276,6 @@ public class MainActivity extends AppCompatActivity {
         mesas.add(new Table(13,13,"Pasillo 4"));
         mesas.add(new Table(14,14,"Pasillo 5"));
         mesas.add(new Table(15,15,"Llevar"));
-        mesas.add(new Table(16,16,"llevar"));
-        mesas.add(new Table(17,17,"llevar"));
 
         for(Ticket t : tickets){
             tablesCurr.add(mesas.get(mesas.indexOf(new Table(t.getTable_id(), 0, null))));
@@ -354,7 +352,7 @@ public class MainActivity extends AppCompatActivity {
                 }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
-                Toast.makeText(getApplicationContext(), "Error de conexión", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getApplicationContext(), "Error de conexión o datos incorrectos", Toast.LENGTH_SHORT).show();
             }
         }) {
             @Override

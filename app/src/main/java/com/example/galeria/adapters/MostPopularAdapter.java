@@ -48,7 +48,7 @@ public class MostPopularAdapter extends RecyclerView.Adapter<MostPopularAdapter.
     public void onBindViewHolder(@NonNull MostPopularViewHolder mostPopularViewHolder, int i) {
         mostPopularViewHolder.name.setText(topProducts.get(i).getName());
         mostPopularViewHolder.category.setText(topProducts.get(i).getCategory());
-        mostPopularViewHolder.price.setText(String.valueOf(topProducts.get(i).getPrice())+"€");
+        mostPopularViewHolder.price.setText(String.format("%.2f",topProducts.get(i).getPrice())+"€");
 
         mostPopularViewHolder.lyTopProd.setOnClickListener(new View.OnClickListener() {
             @Override

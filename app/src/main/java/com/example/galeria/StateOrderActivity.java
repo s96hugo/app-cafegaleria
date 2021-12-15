@@ -119,7 +119,7 @@ public class StateOrderActivity extends AppCompatActivity {
                                         startActivity(intent);
 
                                     } else {
-                                        Toast.makeText(getApplicationContext(), "Error inesperado", Toast.LENGTH_SHORT).show();
+                                        Toast.makeText(getApplicationContext(), "Aún no se ha realizado ningún pedido en esta mesa.", Toast.LENGTH_SHORT).show();
                                     }
 
                                 }

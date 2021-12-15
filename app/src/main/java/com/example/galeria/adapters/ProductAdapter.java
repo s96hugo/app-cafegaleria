@@ -3,7 +3,9 @@ package com.example.galeria.adapters;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.os.Build;
 import android.support.annotation.NonNull;
+import android.support.annotation.RequiresApi;
 import android.support.v7.widget.RecyclerView;
 import android.text.Editable;
 import android.view.LayoutInflater;
@@ -31,14 +33,20 @@ import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
 import com.example.galeria.Constant;
 import com.example.galeria.R;
+import com.example.galeria.comparators.ComparatorProduct;
 import com.example.galeria.interfaces.OnRefreshViewListener;
+import com.example.galeria.interfaces.OpenProductsByCategory;
 import com.example.galeria.models.Category;
 import com.example.galeria.models.Product;
+import com.google.gson.Gson;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -131,7 +139,7 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ProductV
             Category c = (Category)category.getSelectedItem();
 
             if(name.getText().toString().isEmpty() || price.getText().toString().isEmpty() || category.getSelectedItem()==null){
-                Toast.makeText(context, "Rellene los campos", Toast.LENGTH_SHORT).show();
+                Toast.makeText(context, "Rellene todos los campos", Toast.LENGTH_SHORT).show();
             } else{
                 editProduct(product.getId(), name.getText().toString(), price.getText().toString(), String.valueOf(c.getId()));
                 dialog.dismiss();
@@ -157,9 +165,15 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ProductV
                     public void onResponse(JSONObject response) {
                         try {
                             if (response.getBoolean("success")) {
+                                Gson gson = new Gson();
+                                JSONObject  array= new JSONObject(response.getString("product"));
+                                Product product = gson.fromJson(array.toString(), Product.class);
+                                lista.remove(product);
+                                lista.add(product);
+
                                 orvl = (OnRefreshViewListener)context;
-                                orvl.refreshView();
-                                Toast.makeText(context, "Producto editado", Toast.LENGTH_SHORT).show();
+                                orvl.refreshProduct(lista, categorias);
+                                Toast.makeText(context, "Producto '" +product.getName().toLowerCase()+ "' editado", Toast.LENGTH_SHORT).show();
                             } else {
 
                                 if(!response.getBoolean("token")){
@@ -170,7 +184,7 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ProductV
 
                             }
                         } catch (JSONException e) {
-                            Toast.makeText(context, "Login error", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(context, e.toString(), Toast.LENGTH_SHORT).show();
                             e.printStackTrace();
                         }
                     }
@@ -196,16 +210,21 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ProductV
         SharedPreferences sharedPreferences = context.getSharedPreferences("user", Context.MODE_PRIVATE);
 
         JsonObjectRequest req = new JsonObjectRequest(Request.Method.POST,
-                Constant.HOME+"/products/" + product.getId() + "/invisible",
+                Constant.HOME+"/products/" + product.getId() + "/delete",
                 null,
                 new Response.Listener<JSONObject>() {
                     @Override
                     public void onResponse(JSONObject response) {
                         try {
                             if (response.getBoolean("success")) {
+
+                                Gson gson = new Gson();
+                                JSONObject  array= new JSONObject(response.getString("product"));
+                                Product product = gson.fromJson(array.toString(), Product.class);
+                                lista.remove(product);
                                 orvl = (OnRefreshViewListener)context;
-                                orvl.refreshView();
-                                Toast.makeText(context, "Producto eliminado", Toast.LENGTH_SHORT).show();
+                                orvl.refreshProduct(lista,categorias);
+                                Toast.makeText(context, "Producto '" + product.getName().toLowerCase() + "' eliminado", Toast.LENGTH_SHORT).show();
 
                             } else {
 
@@ -217,7 +236,7 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ProductV
 
                             }
                         } catch (JSONException e) {
-                            Toast.makeText(context, "Login error", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(context, e.toString(), Toast.LENGTH_SHORT).show();
                             e.printStackTrace();
                         }
                     }

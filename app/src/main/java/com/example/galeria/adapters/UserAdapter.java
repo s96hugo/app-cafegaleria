@@ -28,6 +28,7 @@ import com.example.galeria.Constant;
 import com.example.galeria.R;
 import com.example.galeria.interfaces.OnRefreshViewListener;
 import com.example.galeria.models.User;
+import com.google.gson.Gson;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -93,12 +94,68 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.UserViewHolder
             });
 
             delete.setOnClickListener(view -> {
-                //checkDeleteCategory(category);
+                deleteUser(user);
                 dialog.dismiss();
             });
         }
 
-        public void showEditDialog(User user){
+    private void deleteUser(User user) {
+        RequestQueue rq = Volley.newRequestQueue(context);
+        SharedPreferences sharedPreferences = context.getSharedPreferences("user", Context.MODE_PRIVATE);
+
+        Map<String, String> datos = new HashMap<String, String>();
+        datos.put("token", sharedPreferences.getString("token", ""));
+        JSONObject datosJs = new JSONObject(datos);
+
+        JsonObjectRequest req = new JsonObjectRequest(Request.Method.POST,
+                Constant.HOME+"/user/" + user.getId() + "/edit",
+                datosJs,
+                new Response.Listener<JSONObject>() {
+                    @Override
+                    public void onResponse(JSONObject response) {
+                        try {
+                            if (response.getBoolean("success")) {
+                                JSONObject jsonObject = new JSONObject(response.getString("user"));
+                                Gson gson = new Gson();
+                                User user1 = gson.fromJson(jsonObject.toString(), User.class);
+                                lista.remove(user1);
+                                orvl = (OnRefreshViewListener)context;
+                                orvl.refreshUsers(lista);
+                                Toast.makeText(context, "Usuario '" + user.getName() + "' eliminado", Toast.LENGTH_SHORT).show();
+
+                            } else {
+
+                                if(!response.getBoolean("token")){
+                                    Toast.makeText(context, "Sesión caducada", Toast.LENGTH_SHORT).show();
+                                } else {
+                                    Toast.makeText(context, "Permiso denegado: El usuario '" + user.getName() + "' no pudo ser borrado", Toast.LENGTH_LONG).show();
+                                }
+
+                            }
+                        } catch (JSONException e) {
+                            Toast.makeText(context, e.toString(), Toast.LENGTH_SHORT).show();
+                            e.printStackTrace();
+                        }
+                    }
+                }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                Toast.makeText(context, error.toString(), Toast.LENGTH_SHORT).show();
+            }
+        }) {
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                String token = sharedPreferences.getString("token", "");
+                HashMap<String, String> map = new HashMap<>();
+                map.put("Authorization", "Bearer " + token);
+                return map;
+            }
+        };
+        rq.add(req);
+
+    }
+
+    public void showEditDialog(User user){
             final Dialog dialog = new Dialog(context);
             dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
             dialog.setCancelable(true);
@@ -118,18 +175,13 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.UserViewHolder
 
             edit.setOnClickListener(view -> {
                 if(name.getText().toString() == null || email.getText().toString() == null || pass.getText().toString() == null){
-                    Toast.makeText(context, "Rellene los campos", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(context, "Rellene todos los campos", Toast.LENGTH_SHORT).show();
                 } else if(pass.length()<8) {
-                    Toast.makeText(context, "Contraseña demasiado corta", Toast.LENGTH_SHORT).show();
-                } else if(sharedPreferences.getString("id", "").equals("1") ||
-                        sharedPreferences.getString("email", "").equals(user.getEmail())){
-                    userEdit(user.getId(), name.getText().toString(), email.getText().toString(),pass.getText().toString());
-                    dialog.dismiss();
+                    Toast.makeText(context, "La contraseña debe tener al menos 8 caracteres", Toast.LENGTH_SHORT).show();
                 } else {
-                    String a = sharedPreferences.getString("email", "");
-                    Toast.makeText(context, "No autorizado", Toast.LENGTH_SHORT).show();
+                    userEdit(user.getId(), name.getText().toString(), email.getText().toString(), pass.getText().toString());
+                    dialog.dismiss();
                 }
-
             });
 
         }
@@ -152,28 +204,33 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.UserViewHolder
                         public void onResponse(JSONObject response) {
                             try {
                                 if (response.getBoolean("success")) {
+                                    JSONObject jsonObject = new JSONObject(response.getString("user"));
+                                    Gson gson = new Gson();
+                                    User user = gson.fromJson(jsonObject.toString(), User.class);
+                                    lista.remove(user);
+                                    lista.add(user);
                                     orvl = (OnRefreshViewListener)context;
-                                    orvl.refreshView();
-                                    Toast.makeText(context, "Usuario editado", Toast.LENGTH_SHORT).show();
+                                    orvl.refreshUsers(lista);
+                                    Toast.makeText(context, "Usuario '" + user.getName() + "' editado", Toast.LENGTH_SHORT).show();
 
                                 } else {
 
                                     if(!response.getBoolean("token")){
-                                        Toast.makeText(context, "Sesión caducada", Toast.LENGTH_SHORT).show();
+                                        Toast.makeText(context, "Sesión caducada.", Toast.LENGTH_SHORT).show();
                                     } else {
-                                        Toast.makeText(context, "Error inesperado", Toast.LENGTH_SHORT).show();
+                                        Toast.makeText(context, "Permiso denegado: No puedes editar la información de un usuario ajeno", Toast.LENGTH_LONG).show();
                                     }
 
                                 }
                             } catch (JSONException e) {
-                                Toast.makeText(context, "Login error", Toast.LENGTH_SHORT).show();
+                                Toast.makeText(context, e.toString(), Toast.LENGTH_SHORT).show();
                                 e.printStackTrace();
                             }
                         }
                     }, new Response.ErrorListener() {
                 @Override
                 public void onErrorResponse(VolleyError error) {
-                    Toast.makeText(context, "Error de conexión o datos incorrectos", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(context, error.toString(), Toast.LENGTH_SHORT).show();
                 }
             }) {
                 @Override

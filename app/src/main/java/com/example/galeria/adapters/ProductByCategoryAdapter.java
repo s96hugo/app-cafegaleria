@@ -34,7 +34,7 @@ public class ProductByCategoryAdapter extends RecyclerView.Adapter<ProductByCate
     @NonNull
     @Override
     public ProductByCategoryAdapter.ProductsByCategoryViewHolder onCreateViewHolder(@NonNull ViewGroup viewGroup, int i) {
-        View productByCategoryView = LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.card_products_category, viewGroup, false);
+        View productByCategoryView = LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.card_categories_order, viewGroup, false); //card_products_category
         ProductsByCategoryViewHolder cvh = new ProductsByCategoryViewHolder(productByCategoryView);
         return cvh;
     }
@@ -100,8 +100,9 @@ public class ProductByCategoryAdapter extends RecyclerView.Adapter<ProductByCate
         public ProductsByCategoryViewHolder(@NonNull View itemView) {
             super(itemView);
 
-            tvProdName = itemView.findViewById(R.id.tvProdName);
-            idCardProdCat = itemView.findViewById(R.id.idCardProdCat);
+            tvProdName = itemView.findViewById(R.id.tvCatOrd);
+            idCardProdCat = itemView.findViewById(R.id.idCardCatOrd);
+            tvProdName.setTextSize(14);
         }
     }
 }

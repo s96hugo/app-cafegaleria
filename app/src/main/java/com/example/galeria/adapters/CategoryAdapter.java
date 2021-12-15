@@ -33,7 +33,10 @@ import com.example.galeria.MainActivity;
 import com.example.galeria.R;
 import com.example.galeria.interfaces.OnRefreshViewListener;
 import com.example.galeria.models.Category;
+import com.example.galeria.models.Product;
+import com.google.gson.Gson;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -100,7 +103,8 @@ public class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.Catego
         });
 
         delete.setOnClickListener(view -> {
-            checkDeleteCategory(category);
+            //checkDeleteCategory(category);
+            deleteCategory(category);
             dialog.dismiss();
         });
     }
@@ -142,9 +146,18 @@ public class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.Catego
                     public void onResponse(JSONObject response) {
                         try {
                             if (response.getBoolean("success")) {
+                                JSONArray listCat = new JSONArray(response.getString("categories"));
+                                lista.clear();
+                                for(int i = 0; i< listCat.length();i++){
+                                    JSONObject cat = listCat.getJSONObject(i);
+                                    Gson gson = new Gson();
+                                    Category category = gson.fromJson(cat.toString(), Category.class);
+                                    lista.add(category);
+                                }
+
                                 orvl = (OnRefreshViewListener)context;
-                                orvl.refreshView();
-                                Toast.makeText(context, "Categoría editada", Toast.LENGTH_SHORT).show();
+                                orvl.refreshCategory(lista);
+                                Toast.makeText(context, "Categoría '" + category.getCategory().toUpperCase() +"' editada", Toast.LENGTH_SHORT).show();
 
                             } else {
 
@@ -155,63 +168,14 @@ public class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.Catego
                                 }
                             }
                         } catch (JSONException e) {
-                            Toast.makeText(context, "Login error", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(context, e.toString(), Toast.LENGTH_SHORT).show();
                             e.printStackTrace();
                         }
                     }
                 }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
-                Toast.makeText(context, "Error de conexión", Toast.LENGTH_SHORT).show();
-            }
-        }){
-            @Override
-            public Map<String, String> getHeaders() throws AuthFailureError {
-                String token = sharedPreferences.getString("token", "");
-                HashMap<String,String> map = new HashMap<>();
-                map.put("Authorization", "Bearer " + token);
-                return map;
-            }
-        };
-        rq.add(req);
-    }
-
-    public void checkDeleteCategory(Category category){
-        RequestQueue rq = Volley.newRequestQueue(context);
-        SharedPreferences  sharedPreferences = context.getSharedPreferences("user", Context.MODE_PRIVATE);
-
-
-        JsonObjectRequest req = new JsonObjectRequest(Request.Method.GET,
-                Constant.HOME+"/category/" + category.getId()+"/HasProduct",
-                null,
-                new Response.Listener<JSONObject>() {
-                    @Override
-                    public void onResponse(JSONObject response) {
-                        try {
-                            if (response.getBoolean("success")) {
-
-                                if(response.getBoolean("deleteable")){
-                                    deleteCategory(category);
-                                } else {
-                                    Toast.makeText(context, "Esta categoría tiene productos asociados", Toast.LENGTH_SHORT).show();
-                                }
-                            } else {
-
-                                if(!response.getBoolean("token")){
-                                    Toast.makeText(context, "Sesión caducada", Toast.LENGTH_SHORT).show();
-                                } else {
-                                    Toast.makeText(context, "Error inesperado", Toast.LENGTH_SHORT).show();
-                                }
-                            }
-                        } catch (JSONException e) {
-                            Toast.makeText(context, "Login error", Toast.LENGTH_SHORT).show();
-                            e.printStackTrace();
-                        }
-                    }
-                }, new Response.ErrorListener() {
-            @Override
-            public void onErrorResponse(VolleyError error) {
-                Toast.makeText(context, "Error en check", Toast.LENGTH_SHORT).show();
+                Toast.makeText(context, "Error de conexión o datos incorrectos", Toast.LENGTH_SHORT).show();
             }
         }){
             @Override
@@ -237,28 +201,33 @@ public class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.Catego
                     public void onResponse(JSONObject response) {
                         try {
                             if (response.getBoolean("success")) {
+                                JSONObject jsonArray = response.getJSONObject("category");
+                                Gson gson = new Gson();
+                                Category product = gson.fromJson(jsonArray.toString(), Category.class);
+                                lista.remove(product);
+
                                 orvl = (OnRefreshViewListener)context;
-                                orvl.refreshView();
-                                Toast.makeText(context, "Categoría eliminada", Toast.LENGTH_SHORT).show();
+                                orvl.refreshCategory(lista);
+                                Toast.makeText(context, "Categoría '" + category.getCategory().toLowerCase() +"' eliminada", Toast.LENGTH_SHORT).show();
 
                             } else {
 
                                 if(!response.getBoolean("token")){
                                     Toast.makeText(context, "Sesión caducada", Toast.LENGTH_SHORT).show();
                                 } else {
-                                    Toast.makeText(context, "Error inesperado", Toast.LENGTH_SHORT).show();
+                                    Toast.makeText(context, "No se puede borrar la categoría '" + category.getCategory().toLowerCase()+ "' porque tiene productos asociados", Toast.LENGTH_SHORT).show();
                                 }
 
                             }
                         } catch (JSONException e) {
-                            Toast.makeText(context, "Login error", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(context, e.toString(), Toast.LENGTH_SHORT).show();
                             e.printStackTrace();
                         }
                     }
                 }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
-                Toast.makeText(context, "Error de conexión", Toast.LENGTH_SHORT).show();
+                Toast.makeText(context, "Error de conexión o datos incorrectos", Toast.LENGTH_SHORT).show();
             }
         }){
             @Override

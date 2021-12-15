@@ -26,6 +26,7 @@ import com.example.galeria.adapters.CategoryAdapter;
 import com.example.galeria.adapters.UserAdapter;
 import com.example.galeria.interfaces.OnRefreshViewListener;
 import com.example.galeria.models.Category;
+import com.example.galeria.models.Product;
 import com.example.galeria.models.User;
 import com.google.gson.Gson;
 
@@ -77,8 +78,6 @@ public class UserActivity extends AppCompatActivity implements OnRefreshViewList
             @Override
             public void onRefresh() {
                 getUsers();
-                adapt.notifyDataSetChanged();
-                swipeRefreshLayout.setRefreshing(false);
             }
         });
 
@@ -104,8 +103,7 @@ public class UserActivity extends AppCompatActivity implements OnRefreshViewList
                                     User user = gson.fromJson(cat.toString(), User.class);
                                     users.add(user);
                                 }
-                                adapt = new UserAdapter(users,UserActivity.this);
-                                mrv.setAdapter(adapt);
+                                refreshUsers(users);
 
                             } else {
 
@@ -120,7 +118,7 @@ public class UserActivity extends AppCompatActivity implements OnRefreshViewList
 
                             }
                         } catch (JSONException e) {
-                            Toast.makeText(getApplicationContext(), "Login error", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(getApplicationContext(), e.toString(), Toast.LENGTH_SHORT).show();
                             e.printStackTrace();
                         }
                     }
@@ -195,8 +193,13 @@ public class UserActivity extends AppCompatActivity implements OnRefreshViewList
                     public void onResponse(JSONObject response) {
                         try {
                             if (response.getBoolean("success")) {
-                                Toast.makeText(getApplicationContext(), "Usuario registrado", Toast.LENGTH_SHORT).show();
-                                getUsers();
+                                JSONObject jsonObject = new JSONObject(response.getString("user"));
+                                Gson gson = new Gson();
+                                User user = gson.fromJson(jsonObject.toString(), User.class);
+                                users.add(user);
+                                refreshUsers(users);
+                                Toast.makeText(getApplicationContext(), "Usuario '" + user.getName() + "' registrado", Toast.LENGTH_SHORT).show();
+                                //getUsers();
 
                             } else {
 
@@ -206,12 +209,12 @@ public class UserActivity extends AppCompatActivity implements OnRefreshViewList
                                     startActivity(intent);
 
                                 } else {
-                                    Toast.makeText(getApplicationContext(), "El usuario debe ser único", Toast.LENGTH_SHORT).show();
+                                    Toast.makeText(getApplicationContext(), "Error: No puede haber dos usuarios con el mismo email", Toast.LENGTH_LONG).show();
                                 }
 
                             }
                         } catch (JSONException e) {
-                            Toast.makeText(getApplicationContext(), "El usuario debe ser único", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(getApplicationContext(), e.toString(), Toast.LENGTH_SHORT).show();
                             e.printStackTrace();
                         }
 
@@ -219,7 +222,7 @@ public class UserActivity extends AppCompatActivity implements OnRefreshViewList
                 }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
-                Toast.makeText(getApplicationContext(), "Error de conexión", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getApplicationContext(), "Error de conexión o datos incorrectos", Toast.LENGTH_SHORT).show();
             }
         });
         rq.add(req);
@@ -227,6 +230,24 @@ public class UserActivity extends AppCompatActivity implements OnRefreshViewList
 
     @Override
     public void refreshView() {
-        getUsers();
+        //getUsers(); desuso
+    }
+
+    @Override
+    public void refreshCategory(List<Category> categories) {
+
+    }
+
+    @Override
+    public void refreshProduct(List<Product> products, List<Category> categories) {
+
+    }
+
+    @Override
+    public void refreshUsers(List<User> users) {
+        adapt = new UserAdapter(users,UserActivity.this);
+        mrv.setAdapter(adapt);
+        adapt.notifyDataSetChanged();
+        swipeRefreshLayout.setRefreshing(false);
     }
 }
