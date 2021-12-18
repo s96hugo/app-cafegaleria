@@ -107,15 +107,17 @@ public class OrderedAdapter extends RecyclerView.Adapter<OrderedAdapter.OrderedV
 
         EditText tx = dialog.findViewById(R.id.etCategory);
         Button addd = dialog.findViewById(R.id.badd);
-        tx.setHint("Comentario");
-
-
+        if (productOrder.getComment().equals("") || productOrder.getComment() == null) {
+            tx.setHint("Comentario");
+        } else {
+            tx.setText(productOrder.getComment());
+        }
 
         addd.setOnClickListener(view -> {
-            if(tx.getText().toString().isEmpty()){
-                dialog.dismiss();
+           // if(tx.getText().toString().isEmpty()){
+                //dialog.dismiss();
 
-            } else {
+            //} else {
                 orvl = (OnRefreshDataOrdered)context;
                 orvl.refreshCurrent(productOrder.getProduct_id(),
                         productOrder.getUnits(),
@@ -123,7 +125,7 @@ public class OrderedAdapter extends RecyclerView.Adapter<OrderedAdapter.OrderedV
                         productOrder.getName());
                 dialog.dismiss();
 
-            }
+            //}
 
         });
     }

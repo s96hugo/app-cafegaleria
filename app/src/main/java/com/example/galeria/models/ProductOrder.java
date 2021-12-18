@@ -85,7 +85,7 @@ public class ProductOrder implements Serializable {
     @Override
     public String toString() {
         String salida = "";
-        salida = comment.equals("") ? name : name + "  -  " + comment;
+        salida = comment.equals("") || comment == null ? name : name + "  -  " + comment;
         return  units + " x " + salida;
     }
 

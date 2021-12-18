@@ -257,7 +257,9 @@ public class OrderActivity extends AppCompatActivity implements OnRefreshDataOrd
                                     startActivity(intent);
 
                                 } else {
-                                    Toast.makeText(getApplicationContext(), "Error inesperado", Toast.LENGTH_SHORT).show();
+                                    Intent intent = new Intent(OrderActivity.this, MainActivity.class);
+                                    startActivity(intent);
+                                    Toast.makeText(getApplicationContext(), "No se ha realizado ninguna acción para evitar incoherencia con los datos", Toast.LENGTH_LONG).show();
                                 }
 
                             }
@@ -284,6 +286,12 @@ public class OrderActivity extends AppCompatActivity implements OnRefreshDataOrd
     }
 
 
+    /**
+     * createProductOrder
+     * Metodo que crea un pedido.
+     * El valor devuelto es una lista json de productOrder
+     * con toda la información relativa a ese ticket.
+     */
     public void createProductOrder(){
 
         JSONArray send = new JSONArray();
@@ -335,14 +343,16 @@ public class OrderActivity extends AppCompatActivity implements OnRefreshDataOrd
 
                             } else {
 
-                                JSONObject token = response.getJSONObject(0);
+                                JSONObject token = response.getJSONObject(1);
                                 if(!token.getBoolean("token")){
                                     Toast.makeText(getApplicationContext(), "Sesión caducada", Toast.LENGTH_SHORT).show();
                                     Intent intent = new Intent(OrderActivity.this, LoginActivity.class);
                                     startActivity(intent);
 
                                 } else {
-                                    Toast.makeText(getApplicationContext(), "Error inesperado", Toast.LENGTH_SHORT).show();
+                                    Intent intent = new Intent(OrderActivity.this, MainActivity.class);
+                                    startActivity(intent);
+                                    Toast.makeText(getApplicationContext(), "Este ticket tiene la cuenta realizada", Toast.LENGTH_LONG).show();
                                 }
 
                             }
@@ -369,7 +379,13 @@ public class OrderActivity extends AppCompatActivity implements OnRefreshDataOrd
         rq.add(req);
     }
 
+
     //DataSet
+    /**
+     * getDataSet
+     * Trae toda la información de topProducts, productos, y categorias
+     * y las inicializa en sendas listas.
+     */
     private void getDataSet(){
         topProd.clear();
         categories.clear();
@@ -450,21 +466,6 @@ public class OrderActivity extends AppCompatActivity implements OnRefreshDataOrd
     }
 
 
-    //Si está visible el botón de atrás (para volver a las categorías) te vuelve a las categorías, si no te manta al main activity
-    @Override
-    public void onBackPressed() {
-        if(imhome.getVisibility() == View.VISIBLE){
-            imhome.setVisibility(View.INVISIBLE);
-            tipoVisible.setText("Todos los productos");
-            coa = new CategoryOrderAdapter(categories, products, OrderActivity.this);
-            mrv.setAdapter(coa);
-
-        } else {
-            Intent intent = new Intent(OrderActivity.this, MainActivity.class);
-            startActivity(intent);
-        }
-    }
-
     //Métodos de las interfaces para refrescar los datos de mi lista de productos pedidos
     @Override
     public void refreshData(int product_id, int units, String comment, String name) {
@@ -497,7 +498,7 @@ public class OrderActivity extends AppCompatActivity implements OnRefreshDataOrd
                 0);
 
         if(pedido.contains(productOrder) && productOrder.getComment().isEmpty()){
-
+            pedido.get(pedido.indexOf(productOrder)).setComment("");
         }else if(pedido.contains(productOrder) && !productOrder.getComment().isEmpty()){
             pedido.get(pedido.indexOf(productOrder)).setComment(productOrder.getComment());
 
@@ -510,6 +511,14 @@ public class OrderActivity extends AppCompatActivity implements OnRefreshDataOrd
 
     }
 
+
+    /**
+     * deleteProductOrdered
+     * @param position int
+     *                 elimina de la lista pedido de la comanda el elemento en posición
+     *                 y actualiza el adaptador del rv con los nuevos datos.
+     *       Este método se llama desde OrderedAdapter
+     */
     @Override
     public void deleteProductOrdered(int position) {
         pedido.remove(position);
@@ -517,6 +526,14 @@ public class OrderActivity extends AppCompatActivity implements OnRefreshDataOrd
         orv.setAdapter(oadapt);
     }
 
+
+    /**
+     * ProductsByCategory
+     * @param products lista
+     *                      Metodo que actualiza el recyclerview principal del activity y muestra
+     *                 los productos pertenecientes a la categoria seleccionada. También se actualiza
+     *                 el text view que muestra en la categoría que estás
+     */
     @Override
     public void productsByCategory(List<Product> products) {
         if(products.isEmpty()){
@@ -531,223 +548,23 @@ public class OrderActivity extends AppCompatActivity implements OnRefreshDataOrd
 
     }
 
-    /*
 
-    private void createOrder() {
-        Map<String, String> datos = new HashMap<String, String>();
-        datos.put("ticket_id", String.valueOf(currentTicket.getId()));
-        datos.put("user_id", String.valueOf(sharedPreferences.getString("id", "")));
-        JSONObject datosJs = new JSONObject(datos);
-
-        JsonObjectRequest req = new JsonObjectRequest(Request.Method.POST,
-                Constant.HOME+"/orders/create",
-                datosJs,
-                new Response.Listener<JSONObject>() {
-                    @Override
-                    public void onResponse(JSONObject response) {
-                        try {
-                            if (response.getBoolean("success")) {
-                                JSONObject o = response.getJSONObject("order");
-                                Gson gson = new Gson();
-                                Order order = gson.fromJson(o.toString(), Order.class);
-
-                                //createProductOrder(order);
-
-                            } else {
-
-                                if(!response.getBoolean("token")){
-                                    Toast.makeText(getApplicationContext(), "Sesión caducada", Toast.LENGTH_SHORT).show();
-                                    Intent intent = new Intent(OrderActivity.this, LoginActivity.class);
-                                    startActivity(intent);
-
-                                } else {
-                                    Toast.makeText(getApplicationContext(), "Error inesperado", Toast.LENGTH_SHORT).show();
-                                }
-
-                            }
-                        } catch (JSONException e) {
-                            Toast.makeText(getApplicationContext(), e.toString(), Toast.LENGTH_SHORT).show();
-                            e.printStackTrace();
-                        }
-                    }
-                }, new Response.ErrorListener() {
-            @Override
-            public void onErrorResponse(VolleyError error) {
-                Toast.makeText(getApplicationContext(), "Error de conexión o datos incorrectos", Toast.LENGTH_SHORT).show();
-            }
-        }) {
-            @Override
-            public Map<String, String> getHeaders() throws AuthFailureError {
-                String token = sharedPreferences.getString("token", "");
-                HashMap<String, String> map = new HashMap<>();
-                map.put("Authorization", "Bearer " + token);
-                return map;
-            }
-        };
-        rq.add(req);
-    }
-
-
-    private void getTopProd() {
-        JsonObjectRequest requ = new JsonObjectRequest(Request.Method.GET,
-                Constant.TOP_PRODUCTS,
-                null,
-                new Response.Listener<JSONObject>() {
-                    @Override
-                    public void onResponse(JSONObject response) {
-                        try {
-                            if (response.getBoolean("success")) {
-                                JSONArray ListProd = new JSONArray(response.getString("mostPopular"));
-
-                                for(int i = 0; i< ListProd.length();i++){
-                                    JSONObject prod = ListProd.getJSONObject(i);
-                                    Gson gson = new Gson();
-                                    Product product = gson.fromJson(prod.toString(), Product.class);
-                                    topProd.add(product);
-                                }
-                                adapt = new MostPopularAdapter(OrderActivity.this,topProd);
-                                mrv.setAdapter(adapt);
-
-                            } else {
-
-                                if(!response.getBoolean("token")){
-                                    Toast.makeText(getApplicationContext(), "Sesión caducada", Toast.LENGTH_SHORT).show();
-                                    Intent intent = new Intent(OrderActivity.this, LoginActivity.class);
-                                    startActivity(intent);
-
-                                } else {
-                                    Toast.makeText(getApplicationContext(), "Error inesperado", Toast.LENGTH_SHORT).show();
-                                }
-
-                            }
-                        } catch (JSONException e) {
-                            Toast.makeText(getApplicationContext(), e.toString(), Toast.LENGTH_SHORT).show();
-                            e.printStackTrace();
-                        }
-                    }
-                }, new Response.ErrorListener() {
-            @Override
-            public void onErrorResponse(VolleyError error) {
-                Toast.makeText(getApplicationContext(), "Error de conexión o datos incorrectos", Toast.LENGTH_SHORT).show();
-            }
-        }) {
-            @Override
-            public Map<String, String> getHeaders() throws AuthFailureError {
-                String token = sharedPreferences.getString("token", "");
-                HashMap<String, String> map = new HashMap<>();
-                map.put("Authorization", "Bearer " + token);
-                return map;
-            }
-        };
-        rq.add(requ);
-    }
-
-    private void getCategories() {
-
-        categories.clear();
-        JsonObjectRequest req = new JsonObjectRequest(Request.Method.GET,
-                Constant.GET_ALL_CATEGORY,
-                null,
-                new Response.Listener<JSONObject>() {
-                    @Override
-                    public void onResponse(JSONObject response) {
-                        try {
-                            if (response.getBoolean("success")) {
-
-                                JSONArray listCat = new JSONArray(response.getString("categories"));
-
-                                for(int i = 0; i< listCat.length();i++){
-                                    JSONObject cat = listCat.getJSONObject(i);
-                                    Gson gson = new Gson();
-                                    Category category = gson.fromJson(cat.toString(), Category.class);
-                                    categories.add(category);
-                                }
-
-                            } else {
-
-                                if(!response.getBoolean("token")){
-                                    Toast.makeText(getApplicationContext(), "Sesión caducada", Toast.LENGTH_SHORT).show();
-                                    Intent intent = new Intent(OrderActivity.this, LoginActivity.class);
-                                    startActivity(intent);
-
-                                } else {
-                                    Toast.makeText(getApplicationContext(), "Error inesperado", Toast.LENGTH_SHORT).show();
-                                }
-
-                            }
-                        } catch (JSONException e) {
-                            Toast.makeText(getApplicationContext(), e.toString(), Toast.LENGTH_SHORT).show();
-                            e.printStackTrace();
-                        }
-                    }
-                }, new Response.ErrorListener() {
-            @Override
-            public void onErrorResponse(VolleyError error) {
-                Toast.makeText(getApplicationContext(), "Error de conexión", Toast.LENGTH_SHORT).show();
-            }
-        }) {
-            @Override
-            public Map<String, String> getHeaders() throws AuthFailureError {
-                String token = sharedPreferences.getString("token", "");
-                HashMap<String, String> map = new HashMap<>();
-                map.put("Authorization", "Bearer " + token);
-                return map;
-            }
-        };
-        rq.add(req);
-
-    }
-
-    public void getProducts() {
-        products.clear();
-        StringRequest request = new StringRequest(Request.Method.GET, Constant.PRODUCTS_AND_CATEGORIES, new Response.Listener<String>() {
-            @Override
-            public void onResponse(String response) {
-                try {
-                    JSONObject  res = new JSONObject(response);
-                    if(res.getBoolean("success")){
-                        JSONArray  array= new JSONArray(res.getString("products"));
-                        for(int i = 0 ; i<array.length(); i++){
-                            JSONObject pr = array.getJSONObject(i);
-                            products.add(new Product(pr.getInt("id"),
-                                    pr.getString("name"),
-                                    pr.getString("price"),
-                                    pr.getInt("category_id"),
-                                    pr.getString("category")) );
-                        }
-
-                    } else {
-
-                        if(!res.getBoolean("token")){
-                            Toast.makeText(getApplicationContext(), "Sesión caducada", Toast.LENGTH_SHORT).show();
-                            Intent intent = new Intent(OrderActivity.this, LoginActivity.class);
-                            startActivity(intent);
-
-                        } else {
-                            Toast.makeText(getApplicationContext(), "Error inesperado", Toast.LENGTH_SHORT).show();
-                        }
-
-                    }
-                } catch (JSONException e) {
-                    Toast.makeText(getApplicationContext(), e.toString(), Toast.LENGTH_SHORT).show();
-                    e.printStackTrace();
-                }
-            }
-        }, new Response.ErrorListener() {
-            @Override
-            public void onErrorResponse(VolleyError error) {
-
-            }
-        }){
-            @Override
-            public Map<String, String> getHeaders() throws AuthFailureError {
-                String token = sharedPreferences.getString("token", "");
-                HashMap<String, String> map = new HashMap<>();
-                map.put("Authorization", "Bearer " + token);
-                return map;
-            }
-        };
-        rq.add(request);
-    }
+    /**
+     * onBackPressed
+     * Si está visible el botón de atrás (para volver a las categorías) te vuelve a las
+     * categorías y actualiza el textView a todos los productos, si no te dirige al main activity
      */
+    @Override
+    public void onBackPressed() {
+        if(imhome.getVisibility() == View.VISIBLE){
+            imhome.setVisibility(View.INVISIBLE);
+            tipoVisible.setText("Todos los productos");
+            coa = new CategoryOrderAdapter(categories, products, OrderActivity.this);
+            mrv.setAdapter(coa);
+
+        } else {
+            Intent intent = new Intent(OrderActivity.this, MainActivity.class);
+            startActivity(intent);
+        }
+    }
 }
