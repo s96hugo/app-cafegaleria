@@ -51,8 +51,8 @@ public class StateOrderActivity extends AppCompatActivity {
     SharedPreferences sharedPreferences;
     RequestQueue rq;
     
-    List<Product> products;
-    List<Category> categories;
+
+    List<Category> aux;
 
     Ticket currentTicket;
     String mesa;
@@ -60,6 +60,8 @@ public class StateOrderActivity extends AppCompatActivity {
     TextView tv;
     Button home;
 
+    List<Product> products;
+    List<Category> categories;
     List<ProductOrder> datosBruto;
     ArrayList<Integer> groupListt;
     List<String> groupList;
@@ -94,66 +96,22 @@ public class StateOrderActivity extends AppCompatActivity {
         rq = Volley.newRequestQueue(this);
 
 
-        if((int)getIntent().getSerializableExtra("call") == 1){ //Datos tras hacer pedido
-            //DataSet
-            datosBruto = new ArrayList<>();
-            datosBruto = (List<ProductOrder>) getIntent().getSerializableExtra("datos");
+        //DataSet
+        datosBruto = new ArrayList<>();
+        datosBruto = (List<ProductOrder>) getIntent().getSerializableExtra("datosBruto");
+        products = new ArrayList<>();
+        categories = new ArrayList<>();
+        products = (List<Product>) getIntent().getSerializableExtra("products");
+        categories = (List<Category>) getIntent().getSerializableExtra("categories");
+        aux = new ArrayList<>(categories);
+        aux.add(0, new Category(0, "Todas"));
+
+        if(datosBruto.isEmpty()){
+            Toast.makeText(getApplicationContext(), "Aun no se ha realizado ningún pedido", Toast.LENGTH_SHORT).show();
+        } else {
             loadData(datosBruto);
-
-
-        } else { //Llamada a la api para traer la info
-            JsonObjectRequest req = new JsonObjectRequest(Request.Method.GET,
-                    Constant.HOME+"/productOrders/" + currentTicket.getId() + "/info",
-                    null,
-                    new Response.Listener<JSONObject>() {
-                        @Override
-                        public void onResponse(JSONObject response) {
-                            try {
-                                if (response.getBoolean("success")) {
-                                    datosBruto = new ArrayList<>();
-
-                                    JSONArray prods = response.getJSONArray("ticketOrderInfo");
-                                    for(int i = 0; i< prods.length();i++){
-                                        JSONObject prod = prods.getJSONObject(i);
-                                        Gson gson = new Gson();
-                                        ProductOrder productOrder = gson.fromJson(prod.toString(), ProductOrder.class);
-                                        datosBruto.add(productOrder);
-                                    }
-                                    loadData(datosBruto);
-
-                                } else {
-
-                                    if(!response.getBoolean("token")){
-                                        Toast.makeText(getApplicationContext(), "Sesión caducada", Toast.LENGTH_SHORT).show();
-                                        Intent intent = new Intent(StateOrderActivity.this, LoginActivity.class);
-                                        startActivity(intent);
-
-                                    } else {
-                                        Toast.makeText(getApplicationContext(), "Aún no se ha realizado ningún pedido en esta mesa", Toast.LENGTH_SHORT).show();
-                                    }
-
-                                }
-                            } catch (JSONException e) {
-                                Toast.makeText(getApplicationContext(), e.toString(), Toast.LENGTH_SHORT).show();
-                                e.printStackTrace();
-                            }
-                        }
-                    }, new Response.ErrorListener() {
-                @Override
-                public void onErrorResponse(VolleyError error) {
-                    Toast.makeText(getApplicationContext(), "Error de conexión o datos incorrectos", Toast.LENGTH_SHORT).show();
-                }
-            }) {
-                @Override
-                public Map<String, String> getHeaders() throws AuthFailureError {
-                    String token = sharedPreferences.getString("token", "");
-                    HashMap<String, String> map = new HashMap<>();
-                    map.put("Authorization", "Bearer " + token);
-                    return map;
-                }
-            };
-            rq.add(req);
         }
+
     }
 
     private void loadData(List<ProductOrder> datosBruto) {
@@ -236,9 +194,6 @@ public class StateOrderActivity extends AppCompatActivity {
         Button add = dialog.findViewById(R.id.bSt1);
         TextView producto = dialog.findViewById(R.id.tvSt1);
 
-        if(categories == null || products == null){ //si se abre el diálogo (se intuye que se va a hacer CRUD) se trae los datos
-            getProductsAndCategories();
-        }
 
         producto.setText(productOrder.getName());
         dialog.show();
@@ -303,7 +258,7 @@ public class StateOrderActivity extends AppCompatActivity {
         unidades.setText(String.valueOf(productOrder.getUnits()));
         comentario.setText(productOrder.getComment().equals("") ? "" : productOrder.getComment());
 
-        ArrayAdapter categoryAdapter = new ArrayAdapter(this, R.layout.support_simple_spinner_dropdown_item, categories);
+        ArrayAdapter categoryAdapter = new ArrayAdapter(this, R.layout.support_simple_spinner_dropdown_item, aux);
         categoryAdapter.setDropDownViewResource(R.layout.support_simple_spinner_dropdown_item);
         categoria.setAdapter(categoryAdapter);
         categoria.setSelection(0);
@@ -358,7 +313,7 @@ public class StateOrderActivity extends AppCompatActivity {
         titulo.setText("Añade un nuevo producto");
         //unidades.setText("1");
 
-        ArrayAdapter categoryAdapter = new ArrayAdapter(this, R.layout.support_simple_spinner_dropdown_item, categories);
+        ArrayAdapter categoryAdapter = new ArrayAdapter(this, R.layout.support_simple_spinner_dropdown_item, aux);
         categoryAdapter.setDropDownViewResource(R.layout.support_simple_spinner_dropdown_item);
         categoria.setAdapter(categoryAdapter);
         categoria.setSelection(0);
@@ -483,6 +438,11 @@ public class StateOrderActivity extends AppCompatActivity {
                                     Intent intent = new Intent(StateOrderActivity.this, OrderActivity.class);
                                     intent.putExtra("ticket", currentTicket);
                                     intent.putExtra("pedido", mesa);
+                                    intent.putExtra("datosBruto", (Serializable) datosBruto);
+                                    intent.putExtra("topProducts", (Serializable) getIntent().getSerializableExtra("topProducts"));
+                                    intent.putExtra("products", (Serializable) getIntent().getSerializableExtra("products"));
+                                    intent.putExtra("categories", (Serializable) getIntent().getSerializableExtra("categories"));
+                                    intent.putExtra("abre", 1);
                                     startActivity(intent);
                                 }
 
@@ -506,7 +466,7 @@ public class StateOrderActivity extends AppCompatActivity {
                 }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
-                Toast.makeText(getApplicationContext(), "Error de conexión o datos incorrectos", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getApplicationContext(), "Error de conexión", Toast.LENGTH_SHORT).show();
             }
         }) {
             @Override
@@ -644,80 +604,16 @@ public class StateOrderActivity extends AppCompatActivity {
 
     }
 
-    /**
-     * getProductsAndCategories
-     * Hace una llamada a la api para traerse los productos y categorías
-     * y las instancia en sendas listas.
-     */
-    private void getProductsAndCategories() {
-        JsonObjectRequest req = new JsonObjectRequest(Request.Method.GET,
-                Constant.PRODUCTS_AND_CATEGORIES,
-                null,
-                new Response.Listener<JSONObject>() {
-                    @Override
-                    public void onResponse(JSONObject response) {
-                        try {
-                            if (response.getBoolean("success")) {
-                                products = new ArrayList<>();
-                                categories = new ArrayList<>();
-
-                                //iniciar cargando
-
-                                JSONArray prods = response.getJSONArray("products");
-                                Gson gson = new Gson();
-                                for(int i = 0; i<prods.length();i++){
-                                    Product product = gson.fromJson(prods.getJSONObject(i).toString(), Product.class);
-                                    products.add(product);
-                                }
-
-                                JSONArray cats = response.getJSONArray("categories");
-                                for(int i = 0; i<prods.length();i++){
-                                    Category category = gson.fromJson(cats.getJSONObject(i).toString(), Category.class);
-                                    categories.add(category);
-                                }
-                                categories.add(0, new Category(9999, "Todas"));
-
-                                //Terminar cargando
-
-                            } else {
-
-                                if(!response.getBoolean("token")){
-                                    Toast.makeText(getApplicationContext(), "Sesión caducada", Toast.LENGTH_SHORT).show();
-                                    Intent intent = new Intent(StateOrderActivity.this, LoginActivity.class);
-                                    startActivity(intent);
-
-                                } else {
-                                    Toast.makeText(getApplicationContext(), "Error inesperado", Toast.LENGTH_SHORT).show();
-                                }
-
-                            }
-                        } catch (JSONException e) {
-                            Toast.makeText(getApplicationContext(), e.toString(), Toast.LENGTH_SHORT).show();
-                            e.printStackTrace();
-                        }
-                    }
-                }, new Response.ErrorListener() {
-            @Override
-            public void onErrorResponse(VolleyError error) {
-                Toast.makeText(getApplicationContext(), "Error de conexión o datos incorrectos", Toast.LENGTH_SHORT).show();
-            }
-        }) {
-            @Override
-            public Map<String, String> getHeaders() throws AuthFailureError {
-                String token = sharedPreferences.getString("token", "");
-                HashMap<String, String> map = new HashMap<>();
-                map.put("Authorization", "Bearer " + token);
-                return map;
-            }
-        };
-        rq.add(req);
-    }
-
     @Override
     public void onBackPressed() {
         Intent intent = new Intent(StateOrderActivity.this, OrderActivity.class);
         intent.putExtra("ticket", currentTicket);
         intent.putExtra("pedido", mesa);
+        intent.putExtra("datosBruto", (Serializable) datosBruto);
+        intent.putExtra("topProducts", (Serializable) getIntent().getSerializableExtra("topProducts"));
+        intent.putExtra("products", (Serializable) getIntent().getSerializableExtra("products"));
+        intent.putExtra("categories", (Serializable) getIntent().getSerializableExtra("categories"));
+        intent.putExtra("abre", 1);
         startActivity(intent);
     }
 }

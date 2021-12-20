@@ -74,12 +74,17 @@ public class ProductOrder implements Serializable {
 
         ProductOrder that = (ProductOrder) o;
 
-        return product_id == that.product_id;
+        if (id != that.id) return false;
+        if (product_id != that.product_id) return false;
+        return order_id == that.order_id;
     }
 
     @Override
     public int hashCode() {
-        return product_id;
+        int result = id;
+        result = 31 * result + product_id;
+        result = 31 * result + order_id;
+        return result;
     }
 
     @Override

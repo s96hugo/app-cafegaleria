@@ -13,6 +13,9 @@
         android:theme="@style/Theme.Galeria"
         android:usesCleartextTraffic="true">
         <activity
+            android:name=".TicketResumeActivity"
+            android:exported="true" />
+        <activity
             android:name=".StateOrderActivity"
             android:exported="true"
             android:theme="@style/Theme.Galeria.NoActionBar" />

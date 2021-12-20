@@ -52,6 +52,7 @@ import org.json.JSONObject;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -64,10 +65,11 @@ public class OrderActivity extends AppCompatActivity implements OnRefreshDataOrd
 
     SharedPreferences sharedPreferences;
 
-    List<Product> topProd;
-    List<ProductOrder> pedido;
-    List<Category> categories;
-    List<Product> products;
+    List<Product> topProd;          //Lista con el top de productos
+    List<ProductOrder> pedido;      //Lista con el pedido en la comanda
+    List<Category> categories;      //Lista con todas las categorias
+    List<Product> products;         //lista con todos los productos
+    List<ProductOrder> datosBruto;  //Lista con todos los pedidos del ticket
     RequestQueue rq;
 
     private RecyclerView mrv;
@@ -95,6 +97,7 @@ public class OrderActivity extends AppCompatActivity implements OnRefreshDataOrd
         pedido = new ArrayList<>();
         categories = new ArrayList<>();
         products = new ArrayList<>();
+        datosBruto = new ArrayList<>();
 
         //Instancia rv top productos
         mrv = (RecyclerView)findViewById(R.id.idRecyclerViewTopProd);
@@ -121,7 +124,6 @@ public class OrderActivity extends AppCompatActivity implements OnRefreshDataOrd
     @Override
     protected void onResume() {
         super.onResume();
-
         //Traer datos del main activity o StateOrderActivity
         mesa = (String) getIntent().getSerializableExtra("pedido");
         currentTicket = (Ticket) getIntent().getSerializableExtra("ticket");
@@ -130,10 +132,28 @@ public class OrderActivity extends AppCompatActivity implements OnRefreshDataOrd
 
         numerTicket.setText("Comanda " + mesa);
 
-        //Rellenar el DS
-        getDataSet();//getTopProd(); getCategories(); getProducts();
+        //Si es 0, se ha abierto del main activity, si se está moviendo por las ventanas de ticket, llamada vale 1 y
+        //los datos ya vienen cargados, simplemente los abre el adaptador.
+        int llamada = 0;
+        try{
+            llamada = (int)getIntent().getSerializableExtra("abre");
+        } catch (Exception e){
+        }
+        if(llamada == 1){
+            //Rellenar el DS
+            topProd = (List<Product>) getIntent().getSerializableExtra("topProducts");
+            categories = (List<Category>) getIntent().getSerializableExtra("categories");
+            products = (List<Product>) getIntent().getSerializableExtra("products");
+            datosBruto = (List<ProductOrder>) getIntent().getSerializableExtra("datosBruto");
+            adapt = new MostPopularAdapter(OrderActivity.this,topProd);
+            mrv.setAdapter(adapt);
 
+        } else {
+            //Rellenar el DS
+            getDataSet();//getTopProd(); getCategories(); getProducts();
+        }
 
+        //Funcionalidad de los botones
         bcuenta.setOnClickListener(view -> {
             showPaymentDialog(currentTicket.getId());
 
@@ -182,8 +202,11 @@ public class OrderActivity extends AppCompatActivity implements OnRefreshDataOrd
         bticket.setOnClickListener(view -> {
             Intent intent = new Intent(OrderActivity.this, StateOrderActivity.class);
             intent.putExtra("ticket", currentTicket);
-            intent.putExtra("pedido", (String) getIntent().getSerializableExtra("pedido"));
-            intent.putExtra("call", 0);
+            intent.putExtra("pedido", mesa);
+            intent.putExtra("datosBruto", (Serializable) datosBruto);
+            intent.putExtra("topProducts", (Serializable) topProd);
+            intent.putExtra("products", (Serializable) products);
+            intent.putExtra("categories", (Serializable) categories);
             startActivity(intent);
         });
     }
@@ -285,7 +308,6 @@ public class OrderActivity extends AppCompatActivity implements OnRefreshDataOrd
         rq.add(req);
     }
 
-
     /**
      * createProductOrder
      * Metodo que crea un pedido.
@@ -311,7 +333,6 @@ public class OrderActivity extends AppCompatActivity implements OnRefreshDataOrd
             send.put(datoJS);
         }
 
-
         JsonArrayRequest req = new JsonArrayRequest(Request.Method.POST,
                 Constant.HOME+"/productOrders/create",
                 send,
@@ -322,23 +343,26 @@ public class OrderActivity extends AppCompatActivity implements OnRefreshDataOrd
                             JSONObject success = response.getJSONObject(0);
                             if (success.getBoolean("success")){
 
-                                List<ProductOrder> prods = new ArrayList<>();
+                                pedido.clear();
+                                datosBruto.clear();
                                 Gson gson = new Gson();
                                 JSONObject productOrders = response.getJSONObject(1);
                                 JSONArray jsonArray = productOrders.getJSONArray("ticketOrderInfo");
                                 for(int i = 0; i< jsonArray.length();i++){
                                     JSONObject prod = jsonArray.getJSONObject(i);
                                     ProductOrder po = gson.fromJson(prod.toString(), ProductOrder.class);
-                                    prods.add(po);
+                                    datosBruto.add(po);
+
                                 }
 
                                 bpedir.setClickable(true);
-                                //bpedir.setVisibility(View.VISIBLE);
                                 Intent intent = new Intent(OrderActivity.this, StateOrderActivity.class);
-                                intent.putExtra("call", 1);
                                 intent.putExtra("ticket", currentTicket);
                                 intent.putExtra("pedido", mesa);
-                                intent.putExtra("datos", (Serializable) prods);
+                                intent.putExtra("datosBruto", (Serializable) datosBruto);
+                                intent.putExtra("topProducts", (Serializable) topProd);
+                                intent.putExtra("products", (Serializable) products);
+                                intent.putExtra("categories", (Serializable) categories);
                                 startActivity(intent);
 
                             } else {
@@ -379,19 +403,21 @@ public class OrderActivity extends AppCompatActivity implements OnRefreshDataOrd
         rq.add(req);
     }
 
-
     //DataSet
     /**
      * getDataSet
-     * Trae toda la información de topProducts, productos, y categorias
-     * y las inicializa en sendas listas.
+     * Trae toda la información de topProducts, productos, categorias, informacion del
+     * ticket(pagado), y la lista con todos los pedidos y las inicializa en sendas listas.
+     *
      */
     private void getDataSet(){
         topProd.clear();
         categories.clear();
         products.clear();
+        datosBruto.clear();
+
         JsonObjectRequest requ = new JsonObjectRequest(Request.Method.GET,
-                Constant.DATA_SET,
+                Constant.HOME+"/products/" + currentTicket.getId() + "/dataSet",//DATA_SET,
                 null,
                 new Response.Listener<JSONObject>() {
                     @Override
@@ -399,23 +425,19 @@ public class OrderActivity extends AppCompatActivity implements OnRefreshDataOrd
                         try {
                             if (response.getBoolean("success")) {
 
+                                Gson gson = new Gson();
                                 //Cargar MostPopular
                                 JSONArray ListProd = new JSONArray(response.getString("mostPopular"));
                                 for(int i = 0; i< ListProd.length();i++){
                                     JSONObject prod = ListProd.getJSONObject(i);
-                                    Gson gson = new Gson();
                                     Product product = gson.fromJson(prod.toString(), Product.class);
                                     topProd.add(product);
                                 }
-                                adapt = new MostPopularAdapter(OrderActivity.this,topProd);
-                                mrv.setAdapter(adapt);
 
                                 //CargarCategorias
                                 JSONArray listCat = new JSONArray(response.getString("categories"));
-
                                 for(int i = 0; i< listCat.length();i++) {
                                     JSONObject cat = listCat.getJSONObject(i);
-                                    Gson gson = new Gson();
                                     Category category = gson.fromJson(cat.toString(), Category.class);
                                     categories.add(category);
                                 }
@@ -430,6 +452,17 @@ public class OrderActivity extends AppCompatActivity implements OnRefreshDataOrd
                                             pr.getInt("category_id"),
                                             pr.getString("category")) );
                                 }
+
+                                //ProductOrder - State
+                                JSONArray prods = response.getJSONArray("ticketOrderInfo");
+                                for(int i = 0; i< prods.length();i++) {
+                                    JSONObject prod = prods.getJSONObject(i);
+                                    ProductOrder productOrder = gson.fromJson(prod.toString(), ProductOrder.class);
+                                    datosBruto.add(productOrder);
+                                }
+
+                                adapt = new MostPopularAdapter(OrderActivity.this,topProd);
+                                mrv.setAdapter(adapt);
 
                             } else {
 
