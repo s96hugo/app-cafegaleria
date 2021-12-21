@@ -14,7 +14,8 @@
         android:usesCleartextTraffic="true">
         <activity
             android:name=".TicketResumeActivity"
-            android:exported="true" />
+            android:exported="true"
+            android:theme="@style/Theme.Galeria.NoActionBar" />
         <activity
             android:name=".StateOrderActivity"
             android:exported="true"

@@ -127,13 +127,17 @@ public class CategoyActivity extends AppCompatActivity implements OnRefreshViewL
                     public void onResponse(JSONObject response) {
                         try {
                             if (response.getBoolean("success")) {
+                                list.clear();
 
-                                JSONObject jsonObject = new JSONObject(response.toString());
-                                Gson gson = new Gson();
-                                Category category = gson.fromJson(jsonObject.toString(), Category.class);
-                                list.add(category);
-                                Toast.makeText(getApplicationContext(), "Categoría Añadida", Toast.LENGTH_SHORT).show();
-                                getCategories();
+                                JSONArray listCat = new JSONArray(response.getString("categories"));
+
+                                for(int i = 0; i< listCat.length();i++){
+                                    JSONObject cat = listCat.getJSONObject(i);
+                                    Gson gson = new Gson();
+                                    Category category = gson.fromJson(cat.toString(), Category.class);
+                                    list.add(category);
+                                }
+                                refreshCategory(list);
 
                             } else {
 

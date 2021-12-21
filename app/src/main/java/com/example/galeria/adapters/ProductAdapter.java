@@ -165,15 +165,21 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ProductV
                     public void onResponse(JSONObject response) {
                         try {
                             if (response.getBoolean("success")) {
+                                lista.clear();
                                 Gson gson = new Gson();
-                                JSONObject  array= new JSONObject(response.getString("product"));
-                                Product product = gson.fromJson(array.toString(), Product.class);
-                                lista.remove(product);
-                                lista.add(product);
+                                JSONArray  array= new JSONArray(response.getString("products"));
+                                for(int i = 0 ; i<array.length(); i++){
+                                    JSONObject pr = array.getJSONObject(i);
+                                    lista.add(new Product(pr.getInt("id"),
+                                            pr.getString("name"),
+                                            pr.getString("price"),
+                                            pr.getInt("category_id"),
+                                            pr.getString("category")) );
+                                }
 
                                 orvl = (OnRefreshViewListener)context;
                                 orvl.refreshProduct(lista, categorias);
-                                Toast.makeText(context, "Producto '" +product.getName().toLowerCase()+ "' editado", Toast.LENGTH_SHORT).show();
+                                Toast.makeText(context, "Producto editado", Toast.LENGTH_SHORT).show();
                             } else {
 
                                 if(!response.getBoolean("token")){

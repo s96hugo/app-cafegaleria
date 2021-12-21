@@ -155,8 +155,14 @@ public class OrderActivity extends AppCompatActivity implements OnRefreshDataOrd
 
         //Funcionalidad de los botones
         bcuenta.setOnClickListener(view -> {
-            showPaymentDialog(currentTicket.getId());
-
+            Intent intent = new Intent(OrderActivity.this, TicketResumeActivity.class);
+            intent.putExtra("ticket", currentTicket);
+            intent.putExtra("pedido", mesa);
+            intent.putExtra("datosBruto", (Serializable) datosBruto);
+            intent.putExtra("topProducts", (Serializable) topProd);
+            intent.putExtra("products", (Serializable) products);
+            intent.putExtra("categories", (Serializable) categories);
+            startActivity(intent);
         });
 
         bpedir.setOnClickListener(view -> {
@@ -211,102 +217,7 @@ public class OrderActivity extends AppCompatActivity implements OnRefreshDataOrd
         });
     }
 
-    private void showPaymentDialog(int id) {
-        final Dialog dialog = new Dialog(OrderActivity.this);
-        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
-        dialog.setCancelable(true);
-        dialog.setContentView(R.layout.payment_dialog);
 
-        Spinner s = dialog.findViewById(R.id.sTipoPago);
-        Button b = dialog.findViewById(R.id.bPago);
-
-        String[] payMethod = {"Efectivo","Tarjeta","Impago"};
-
-        ArrayAdapter paymentAdapter = new ArrayAdapter(this, R.layout.support_simple_spinner_dropdown_item, payMethod);
-        paymentAdapter.setDropDownViewResource(R.layout.support_simple_spinner_dropdown_item);
-        s.setAdapter(paymentAdapter);
-
-        dialog.show();
-
-        b.setOnClickListener(view -> {
-            makeBill(id, s.getSelectedItemPosition());
-            dialog.dismiss();
-
-        });
-    }
-
-    private void makeBill(int id, int tipoPago) {
-
-        Map<String, String> datos = new HashMap<String, String>();
-        datos.put("pay", String.valueOf(tipoPago));
-        JSONObject datosJs = new JSONObject(datos);
-
-        JsonObjectRequest req = new JsonObjectRequest(Request.Method.POST,
-                Constant.HOME+"/tickets/" + id + "/cuenta",
-                datosJs,
-                new Response.Listener<JSONObject>() {
-                    @Override
-                    public void onResponse(JSONObject response) {
-                        try {
-                            if (response.getBoolean("success")) {
-
-                                List<Pagado> prods = new ArrayList<>();
-
-                                JSONObject ticketJS = response.getJSONObject("ticket");
-                                Gson gson = new Gson();
-                                Ticket ticket = gson.fromJson(ticketJS.toString(), Ticket.class);
-
-                                JSONArray pagado = response.getJSONArray("unidades");
-                                for(int i = 0; i< pagado.length();i++){
-                                    JSONObject prod = pagado.getJSONObject(i);
-                                    Pagado category = gson.fromJson(prod.toString(), Pagado.class);
-                                    prods.add(category);
-                                }
-
-
-                                Intent intent = new Intent(OrderActivity.this, TicketClosedActivity.class);
-                                intent.putExtra("ticket", ticket);
-                                intent.putExtra("mesa", (String) getIntent().getSerializableExtra("pedido"));
-                                intent.putExtra("productos", (Serializable) prods);
-                                intent.putExtra("call", 1);
-                                startActivity(intent);
-
-
-                            } else {
-
-                                if(!response.getBoolean("token")){
-                                    Toast.makeText(getApplicationContext(), "Sesión caducada", Toast.LENGTH_SHORT).show();
-                                    Intent intent = new Intent(OrderActivity.this, LoginActivity.class);
-                                    startActivity(intent);
-
-                                } else {
-                                    Intent intent = new Intent(OrderActivity.this, MainActivity.class);
-                                    startActivity(intent);
-                                    Toast.makeText(getApplicationContext(), "No se ha realizado ninguna acción para evitar incoherencia con los datos", Toast.LENGTH_LONG).show();
-                                }
-
-                            }
-                        } catch (JSONException e) {
-                            Toast.makeText(getApplicationContext(), e.toString(), Toast.LENGTH_SHORT).show();
-                            e.printStackTrace();
-                        }
-                    }
-                }, new Response.ErrorListener() {
-            @Override
-            public void onErrorResponse(VolleyError error) {
-                Toast.makeText(getApplicationContext(), "Error de conexión o datos incorrectos", Toast.LENGTH_SHORT).show();
-            }
-        }) {
-            @Override
-            public Map<String, String> getHeaders() throws AuthFailureError {
-                String token = sharedPreferences.getString("token", "");
-                HashMap<String, String> map = new HashMap<>();
-                map.put("Authorization", "Bearer " + token);
-                return map;
-            }
-        };
-        rq.add(req);
-    }
 
     /**
      * createProductOrder

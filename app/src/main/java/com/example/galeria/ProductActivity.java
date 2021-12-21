@@ -137,6 +137,7 @@ public class ProductActivity extends AppCompatActivity implements OnRefreshViewL
     }
 
     private void createProduct(String name, String price, String category) {
+        products.clear();
         Map<String, String> datos = new HashMap<String, String>();
         datos.put("name", name.substring(0, 1).toUpperCase(Locale.ROOT) + name.substring(1));
         datos.put("price", price);
@@ -151,12 +152,14 @@ public class ProductActivity extends AppCompatActivity implements OnRefreshViewL
                     public void onResponse(JSONObject response) {
                         try {
                             if (response.getBoolean("success")) {
-                                JSONArray jsonArray = response.getJSONArray("product");
-                                Gson gson = new Gson();
-                                for (int i = 0 ; i<jsonArray.length(); i++) {
-                                    JSONObject jsonObject = jsonArray.getJSONObject(i);
-                                    Product product = gson.fromJson(jsonObject.toString(), Product.class);
-                                    products.add(product);
+                                JSONArray  array= new JSONArray(response.getString("products"));
+                                for(int i = 0 ; i<array.length(); i++){
+                                    JSONObject pr = array.getJSONObject(i);
+                                    products.add(new Product(pr.getInt("id"),
+                                            pr.getString("name"),
+                                            pr.getString("price"),
+                                            pr.getInt("category_id"),
+                                            pr.getString("category")) );
                                 }
 
                                 refreshProduct(products,categorias);

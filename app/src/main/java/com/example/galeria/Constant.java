@@ -1,7 +1,7 @@
 package com.example.galeria;
 
 public class Constant {
-    public static final String URL = "http://192.168.1.133:8081/";
+    public static final String URL =  "http://192.168.1.133:8081/";  // Local -> "http://192.168.1.133:8081/";     Produccion -> "http://92.222.25.161:8081/";
     public static final String HOME = URL+"api";
 
     //login

@@ -606,14 +606,34 @@ public class StateOrderActivity extends AppCompatActivity {
 
     @Override
     public void onBackPressed() {
-        Intent intent = new Intent(StateOrderActivity.this, OrderActivity.class);
-        intent.putExtra("ticket", currentTicket);
-        intent.putExtra("pedido", mesa);
-        intent.putExtra("datosBruto", (Serializable) datosBruto);
-        intent.putExtra("topProducts", (Serializable) getIntent().getSerializableExtra("topProducts"));
-        intent.putExtra("products", (Serializable) getIntent().getSerializableExtra("products"));
-        intent.putExtra("categories", (Serializable) getIntent().getSerializableExtra("categories"));
-        intent.putExtra("abre", 1);
-        startActivity(intent);
+        //Si es 0, se ha abierto del Order activity, si viene de cambiar en ResumenActivity, llamada vale 1 y
+        int llamada = 0;
+        try{
+            llamada = (int)getIntent().getSerializableExtra("abre");
+        } catch (Exception e){
+        }
+        if(llamada == 1){//Caso 1 -> a TicketResume
+            Intent intent = new Intent(StateOrderActivity.this, TicketResumeActivity.class);
+            intent.putExtra("ticket", currentTicket);
+            intent.putExtra("pedido", mesa);
+            intent.putExtra("datosBruto", (Serializable) datosBruto);
+            intent.putExtra("topProducts", (Serializable) getIntent().getSerializableExtra("topProducts"));
+            intent.putExtra("products", (Serializable) getIntent().getSerializableExtra("products"));
+            intent.putExtra("categories", (Serializable) getIntent().getSerializableExtra("categories"));
+            startActivity(intent);
+
+        } else {//caso 0 -> a OrderActivity
+            Intent intent = new Intent(StateOrderActivity.this, OrderActivity.class);
+            intent.putExtra("ticket", currentTicket);
+            intent.putExtra("pedido", mesa);
+            intent.putExtra("datosBruto", (Serializable) datosBruto);
+            intent.putExtra("topProducts", (Serializable) getIntent().getSerializableExtra("topProducts"));
+            intent.putExtra("products", (Serializable) getIntent().getSerializableExtra("products"));
+            intent.putExtra("categories", (Serializable) getIntent().getSerializableExtra("categories"));
+            intent.putExtra("abre", 1);
+            startActivity(intent);
+
+        }
+
     }
 }
