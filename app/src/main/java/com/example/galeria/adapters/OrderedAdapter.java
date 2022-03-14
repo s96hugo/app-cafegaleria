@@ -46,6 +46,11 @@ public class OrderedAdapter extends RecyclerView.Adapter<OrderedAdapter.OrderedV
 
     @Override
     public void onBindViewHolder(@NonNull OrderedViewHolder orderedAdapterViewHolder, int i) {
+        if(list.get(i).getName().length() >= 17 && list.get(i).getName().length() < 22){
+            orderedAdapterViewHolder.name.setTextSize(16);
+        } else if(list.get(i).getName().length() > 22){
+            orderedAdapterViewHolder.name.setTextSize(14);
+        }
         orderedAdapterViewHolder.name.setText(list.get(i).getName());
         orderedAdapterViewHolder.cantidad.setText(String.valueOf(list.get(i).getUnits()));
         if(list.get(i).getComment().isEmpty()) {

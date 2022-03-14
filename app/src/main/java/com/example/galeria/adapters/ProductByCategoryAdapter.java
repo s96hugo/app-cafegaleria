@@ -41,6 +41,9 @@ public class ProductByCategoryAdapter extends RecyclerView.Adapter<ProductByCate
 
     @Override
     public void onBindViewHolder(@NonNull ProductByCategoryAdapter.ProductsByCategoryViewHolder productsByCategoryViewHolder, int i) {
+        if(products.get(i).getName().length() > 18){
+            productsByCategoryViewHolder.tvProdName.setTextSize(12);
+        }
         productsByCategoryViewHolder.tvProdName.setText(products.get(i).getName());
         productsByCategoryViewHolder.idCardProdCat.setOnClickListener(view -> {
             showProductOrderDialog(products.get(i));
