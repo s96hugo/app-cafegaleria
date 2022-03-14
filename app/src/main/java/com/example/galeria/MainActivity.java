@@ -44,9 +44,9 @@ public class MainActivity extends AppCompatActivity {
     private static String mesaStatic;
     ImageButton setting, ref;
     TextView nombre, email;
-    boolean cb1,cb2,cb3,cb4,cm1,cm2,cm3,cm4,cm5,cp1,cp2,cp3,cp4,cp5;
-    Button b1,b2,b3,b4,m1,m2,m3,m4, m5,p1,p2,p3,p4,p5;
-    Ticket tb1, tb2, tb3, tb4, tm1, tm2, tm3, tm4, tm5, tp1, tp2, tp3, tp4, tp5;
+    boolean cb1,cb2,cb3,cb4,cm1,cm2,cm3,cm4,cm5,cp1,cp2,cp3,cp4,cp5, cll;
+    Button b1,b2,b3,b4,m1,m2,m3,m4, m5,p1,p2,p3,p4,p5, ll;
+    Ticket tb1, tb2, tb3, tb4, tm1, tm2, tm3, tm4, tm5, tp1, tp2, tp3, tp4, tp5, tll;
     private SharedPreferences sharedPreferences;
     private List<Ticket> tickets;
     private RequestQueue rq;
@@ -72,6 +72,7 @@ public class MainActivity extends AppCompatActivity {
         p3 = findViewById(R.id.bp3);
         p4 = findViewById(R.id.bp4);
         p5 = findViewById(R.id.bp5);
+        ll = findViewById(R.id.bll);
 
         nombre = findViewById(R.id.tvNombre);
         email = findViewById(R.id.tvEmail);
@@ -164,7 +165,13 @@ public class MainActivity extends AppCompatActivity {
 
         Button bticket = dialog.findViewById(R.id.bCreateTicket);
         TextView tvmesa = dialog.findViewById(R.id.tvMesa);
-        tvmesa.setText("en " + mesa);
+
+        if(id == 15){
+            tvmesa.setText("para " + mesa);
+        } else {
+            tvmesa.setText("en " + mesa);
+        }
+
         dialog.show();
 
         bticket.setOnClickListener(view -> {
@@ -382,6 +389,7 @@ public class MainActivity extends AppCompatActivity {
         cp3 = true;
         cp4 = true;
         cp5 = true;
+        cll = true;
 
         tb1 = null;
         tb2 = null;
@@ -397,6 +405,7 @@ public class MainActivity extends AppCompatActivity {
         tp3 = null;
         tp4 = null;
         tp5 = null;
+        tll = null;
 
         b1.setBackgroundColor(getResources().getColor(R.color.green));
         b2.setBackgroundColor(getResources().getColor(R.color.green));
@@ -412,6 +421,7 @@ public class MainActivity extends AppCompatActivity {
         p3.setBackgroundColor(getResources().getColor(R.color.green));
         p4.setBackgroundColor(getResources().getColor(R.color.green));
         p5.setBackgroundColor(getResources().getColor(R.color.green));
+        ll.setBackgroundColor(getResources().getColor(R.color.green));
 
         for(Ticket t : tickets){
             if(t.getTable_id()==1){
@@ -484,7 +494,13 @@ public class MainActivity extends AppCompatActivity {
                 cp5 = false;
                 tp5 = t;
                 registerForContextMenu(p5);
-            }else {
+            }else if(t.getTable_id() == 15){
+                ll.setBackgroundColor(getResources().getColor(R.color.red));
+                cll = false;
+                tll = t;
+                registerForContextMenu(ll);
+            } else {
+
             }
         }
 
@@ -651,6 +667,18 @@ public class MainActivity extends AppCompatActivity {
                 Intent intent = new Intent(MainActivity.this, OrderActivity.class);
                 intent.putExtra("ticket", tp5);
                 intent.putExtra("pedido", "pasillo 5");
+                startActivity(intent);
+                //onPause();
+            }
+        });
+
+        ll.setOnClickListener(view -> {
+            if(cll){
+                showCreateTicketDialog(15, "Llevar");
+            } else {
+                Intent intent = new Intent(MainActivity.this, OrderActivity.class);
+                intent.putExtra("ticket", tll);
+                intent.putExtra("pedido", "llevar");
                 startActivity(intent);
                 //onPause();
             }

@@ -108,7 +108,7 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.UserViewHolder
         JSONObject datosJs = new JSONObject(datos);
 
         JsonObjectRequest req = new JsonObjectRequest(Request.Method.POST,
-                Constant.HOME+"/user/" + user.getId() + "/edit",
+                Constant.HOME+"/user/" + user.getId() + "/delete",
                 datosJs,
                 new Response.Listener<JSONObject>() {
                     @Override

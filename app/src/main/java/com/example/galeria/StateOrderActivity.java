@@ -219,20 +219,20 @@ public class StateOrderActivity extends AppCompatActivity {
         final Dialog dialog = new Dialog(this);
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
         dialog.setCancelable(true);
-        dialog.setContentView(R.layout.options_dialog);
+        dialog.setContentView(R.layout.state_options_dialog);
         dialog.show();
 
-        Button edit = dialog.findViewById(R.id.bedita);
-        Button delete = dialog.findViewById(R.id.belimin);
-        TextView cat = dialog.findViewById(R.id.tvCategoryOption);
+        Button a = dialog.findViewById(R.id.bSt1);
+        Button delete = dialog.findViewById(R.id.bSt2);
+        Button b = dialog.findViewById(R.id.bSt3);
+        TextView cat = dialog.findViewById(R.id.tvSt1);
 
         cat.setTextSize(14);
-        cat.setText("Borrar " + productOrder.getName() + " del pedido");
+        cat.setText("Borrar '" + productOrder.getName() + "' del pedido");
 
-        edit.setText("Cancelar");
-        edit.setOnClickListener(view -> {
-            dialog.dismiss();
-        });
+        delete.setText("Borrar");
+        a.setVisibility(View.INVISIBLE);
+        b.setVisibility(View.INVISIBLE);
 
         delete.setOnClickListener(view -> {
             deleteOrder(productOrder);
@@ -252,7 +252,6 @@ public class StateOrderActivity extends AppCompatActivity {
         EditText unidades = dialog.findViewById(R.id.idStdEtUnidades);
         EditText comentario = dialog.findViewById(R.id.idStdEdComentario);
         Button aceptar = dialog.findViewById(R.id.idStdBtGuardar);
-        Button cancelar = dialog.findViewById(R.id.idStdBtCancelar);
 
         titulo.setText(productOrder.getName());
         unidades.setText(String.valueOf(productOrder.getUnits()));
@@ -277,10 +276,6 @@ public class StateOrderActivity extends AppCompatActivity {
             }
         });
         dialog.show();
-
-        cancelar.setOnClickListener(view -> {
-            dialog.dismiss();
-        });
 
         aceptar.setOnClickListener(view -> {
             Product p = (Product)producto.getSelectedItem();
@@ -308,7 +303,6 @@ public class StateOrderActivity extends AppCompatActivity {
         EditText unidades = dialog.findViewById(R.id.idStdEtUnidades);
         EditText comentario = dialog.findViewById(R.id.idStdEdComentario);
         Button aceptar = dialog.findViewById(R.id.idStdBtGuardar);
-        Button cancelar = dialog.findViewById(R.id.idStdBtCancelar);
 
         titulo.setText("Añade un nuevo producto");
         //unidades.setText("1");
@@ -331,10 +325,6 @@ public class StateOrderActivity extends AppCompatActivity {
             }
         });
         dialog.show();
-
-        cancelar.setOnClickListener(view -> {
-            dialog.dismiss();
-        });
 
         aceptar.setOnClickListener(view -> {
             Product product = (Product) producto.getSelectedItem();
