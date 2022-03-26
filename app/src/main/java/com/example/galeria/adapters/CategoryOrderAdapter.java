@@ -44,6 +44,9 @@ public class CategoryOrderAdapter extends RecyclerView.Adapter<CategoryOrderAdap
 
     @Override
     public void onBindViewHolder(@NonNull CategoryViewHolder categoryViewHolder, int i) {
+        if(categories.get(i).getCategory().length() > 18){
+            categoryViewHolder.idCateName.setTextSize(12);
+        }
         categoryViewHolder.idCateName.setText(categories.get(i).toString());
         categoryViewHolder.cel.setOnClickListener(view -> {
             productsFiltered.clear();

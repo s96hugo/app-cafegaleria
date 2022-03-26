@@ -37,7 +37,7 @@
 
             <TextView
                 android:id="@+id/idProduName"
-                android:layout_width="185dp"
+                android:layout_width="165dp"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_vertical|center_horizontal"
                 android:layout_margin="10dp"

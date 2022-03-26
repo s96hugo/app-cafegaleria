@@ -292,6 +292,12 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ProductV
                     }
                 }
 
+                for (Product prod : listaFull){
+                    if(prod.getCategory().toLowerCase().contains(filterPattern)){
+                        filteredList.add(prod);
+                    }
+                }
+
             }
 
             FilterResults results = new FilterResults();

@@ -48,7 +48,6 @@ public class MostPopularAdapter extends RecyclerView.Adapter<MostPopularAdapter.
     public void onBindViewHolder(@NonNull MostPopularViewHolder mostPopularViewHolder, int i) {
         mostPopularViewHolder.name.setText(topProducts.get(i).getName());
         mostPopularViewHolder.category.setText(topProducts.get(i).getCategory());
-        mostPopularViewHolder.price.setText(String.format("%.2f",topProducts.get(i).getPrice())+"€");
 
         mostPopularViewHolder.lyTopProd.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -106,14 +105,13 @@ public class MostPopularAdapter extends RecyclerView.Adapter<MostPopularAdapter.
 
     public class MostPopularViewHolder extends RecyclerView.ViewHolder {
 
-        TextView name, price, category;
+        TextView name, category;
         CardView lyTopProd;
         public MostPopularViewHolder(@NonNull View itemView) {
             super(itemView);
 
             name = itemView.findViewById(R.id.tvProdName);
             category = itemView.findViewById(R.id.tvProdCategory);
-            price = itemView.findViewById(R.id.tvPrice);
             lyTopProd = itemView.findViewById(R.id.idCardTop);
         }
     }

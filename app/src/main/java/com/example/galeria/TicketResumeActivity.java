@@ -8,9 +8,12 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.view.View;
 import android.view.Window;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -42,8 +45,11 @@ import java.util.Map;
 
 public class TicketResumeActivity extends AppCompatActivity {
 
-    TextView numeroTicket, table, total;
+    TextView numeroTicket, table, total, cambio;
     Button cambiar, finalizar;
+    ImageButton vuelta;
+    double precio;
+
     RecyclerView mrv;
 
     SharedPreferences sharedPreferences;
@@ -65,6 +71,9 @@ public class TicketResumeActivity extends AppCompatActivity {
         cambiar = findViewById(R.id.idTicketResumeBEditar);
         finalizar = findViewById(R.id.idTicketResumeBFinalizar);
         mrv = findViewById(R.id.idTicketResumeRvProds);
+
+        cambio = findViewById(R.id.tvVueltaa);
+        vuelta = findViewById(R.id.ibVueltaa);
 
     }
 
@@ -101,6 +110,10 @@ public class TicketResumeActivity extends AppCompatActivity {
 
         finalizar.setOnClickListener(view -> {
             showPaymentDialog(currentTicket.getId());
+        });
+
+        vuelta.setOnClickListener(view -> {
+            showExchangeDialog();
         });
     }
 
@@ -220,7 +233,7 @@ public class TicketResumeActivity extends AppCompatActivity {
                                     prods.add(category);
                                 }
 
-                                double precio = 0;
+                                precio = 0;
                                 for(Pagado prod : prods){
                                     precio += Integer.parseInt(prod.getUnits())*Double.parseDouble(prod.getPrice());
                                 }
@@ -264,6 +277,35 @@ public class TicketResumeActivity extends AppCompatActivity {
         };
         rq.add(req);
 
+    }
+
+    private void showExchangeDialog() {
+        final Dialog dialog = new Dialog(TicketResumeActivity.this);
+        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+        dialog.setCancelable(true);
+        dialog.setContentView(R.layout.category_dialog);
+        dialog.show();
+
+        EditText tx = dialog.findViewById(R.id.etCategory);
+        Button addd = dialog.findViewById(R.id.badd);
+        tx.setHint("Calcular devolución");
+        addd.setText("Calcula");
+
+        addd.setOnClickListener(view -> {
+            if(tx.getText().toString().isEmpty()){
+                Toast.makeText(getApplicationContext(), "Introduzca cantidad pagada por el cliente", Toast.LENGTH_SHORT).show();
+
+            } else {
+                try{
+                    cambio.setText("Entrega " + String.format("%.2f",Double.parseDouble(tx.getText().toString()))+ "€  ➝  Devolver " + String.format("%.2f",Double.parseDouble(tx.getText().toString()) - precio) + "€");
+                    dialog.dismiss();
+
+                } catch (Exception e) {
+                    Toast.makeText(getApplicationContext(), "Formato incorrecto", Toast.LENGTH_SHORT).show();
+                }
+            }
+
+        });
     }
 
     @Override

@@ -47,6 +47,7 @@ public class SettingsActivity extends AppCompatActivity {
         settings.add("Categorías");
         settings.add("Productos");
         settings.add("Tickets");
+        settings.add("Facturación");
         settings.add("Usuarios");
         settings.add("Cerrar sesión");
 
@@ -75,19 +76,19 @@ public class SettingsActivity extends AppCompatActivity {
                         break;
 
 
-                case 3:
+                case 4:
                         intent = new Intent(SettingsActivity.this, UserActivity.class);
                         startActivity(intent);
                         break;
 
 
-                case 4:
+                case 5:
                         logout();
                         break;
 
 
                 default:
-                        Toast.makeText(SettingsActivity.this, "Seleccione una acción", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(SettingsActivity.this, "Función no implementada", Toast.LENGTH_SHORT).show();
                         break;
             }
                 });

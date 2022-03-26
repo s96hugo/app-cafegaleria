@@ -53,7 +53,7 @@
         android:id="@+id/bRegistro"
         android:layout_width="81dp"
         android:layout_height="41dp"
-        android:backgroundTint="@color/defecto"
+        android:backgroundTint="@color/white"
         android:text="Guardar"
         android:textSize="12sp"
         app:layout_constraintBottom_toBottomOf="parent"

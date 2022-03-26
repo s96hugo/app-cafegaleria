@@ -5,7 +5,7 @@ import java.util.Date;
 
 public class Ticket implements Serializable {
     private int id;
-    private int number;
+    private String number;
     private String date;
     private double total;
     private String payment;
@@ -20,7 +20,7 @@ public class Ticket implements Serializable {
 
      */
 
-    public Ticket(int id, int number, String date, double total, String payment, int table_id) {
+    public Ticket(int id, String number, String date, double total, String payment, int table_id) {
         this.id = id;
         this.number = number;
         this.date = date;
@@ -37,11 +37,11 @@ public class Ticket implements Serializable {
         this.id = id;
     }
 
-    public int getNumber() {
+    public String getNumber() {
         return number;
     }
 
-    public void setNumber(int number) {
+    public void setNumber(String number) {
         this.number = number;
     }
 

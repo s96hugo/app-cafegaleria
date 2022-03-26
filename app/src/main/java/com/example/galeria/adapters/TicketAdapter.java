@@ -36,7 +36,26 @@ public class TicketAdapter extends RecyclerView.Adapter<TicketAdapter.TicketView
         double subtotal = Integer.parseInt(list.get(i).getUnits())*Double.parseDouble(list.get(i).getPrice());
         tiketViewHolder.name.setText(list.get(i).getName());
         tiketViewHolder.units.setText(list.get(i).getUnits()+ " x " + list.get(i).getPrice() + "€");
-        tiketViewHolder.subtotal.setText(String.format("%.2f",subtotal) +"€" );
+        tiketViewHolder.subtotal.setText(String.format("%.2f", subtotal) + "€");
+
+        if(tiketViewHolder.name.getText().toString().length()>=15&& tiketViewHolder.name.getText().toString().length()<21) {
+            tiketViewHolder.name.setTextSize(12);
+        } else if (tiketViewHolder.name.getText().toString().length()>=21) {
+            tiketViewHolder.name.setTextSize(11);
+        }
+
+        if(tiketViewHolder.units.getText().toString().length() == 10) {
+            tiketViewHolder.units.setTextSize(13);
+        } else if(tiketViewHolder.units.getText().toString().length()>=11){
+            tiketViewHolder.units.setTextSize(12);
+        }
+
+        if(tiketViewHolder.subtotal.getText().toString().length() == 6) {
+            tiketViewHolder.subtotal.setTextSize(13);
+        } else if(tiketViewHolder.subtotal.getText().toString().length()>=7) {
+            tiketViewHolder.subtotal.setTextSize(12);
+        }
+
     }
 
     @Override

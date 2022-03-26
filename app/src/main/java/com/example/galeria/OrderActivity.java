@@ -83,7 +83,7 @@ public class OrderActivity extends AppCompatActivity implements OnRefreshDataOrd
     String mesa;
     Ticket currentTicket;
 
-    boolean visible = true;
+    boolean visible = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -145,8 +145,11 @@ public class OrderActivity extends AppCompatActivity implements OnRefreshDataOrd
             categories = (List<Category>) getIntent().getSerializableExtra("categories");
             products = (List<Product>) getIntent().getSerializableExtra("products");
             datosBruto = (List<ProductOrder>) getIntent().getSerializableExtra("datosBruto");
-            adapt = new MostPopularAdapter(OrderActivity.this,topProd);
-            mrv.setAdapter(adapt);
+            //adapt = new MostPopularAdapter(OrderActivity.this,topProd);
+            //mrv.setAdapter(adapt);
+            coa = new CategoryOrderAdapter(categories, products, OrderActivity.this);
+            mrv.setAdapter(coa);
+
 
         } else {
             //Rellenar el DS
@@ -372,8 +375,11 @@ public class OrderActivity extends AppCompatActivity implements OnRefreshDataOrd
                                     datosBruto.add(productOrder);
                                 }
 
-                                adapt = new MostPopularAdapter(OrderActivity.this,topProd);
-                                mrv.setAdapter(adapt);
+                                //adapt = new MostPopularAdapter(OrderActivity.this,topProd);
+                                //mrv.setAdapter(adapt);
+
+                                coa = new CategoryOrderAdapter(categories, products, OrderActivity.this);
+                                mrv.setAdapter(coa);
 
                             } else {
 
@@ -483,7 +489,7 @@ public class OrderActivity extends AppCompatActivity implements OnRefreshDataOrd
         if(products.isEmpty()){
             tipoVisible.setText("Esta categoría no tiene productos");
         } else {
-            tipoVisible.setText("Todos los productos > " + products.get(0).getCategory());
+            tipoVisible.setText("Todos los productos ➝ " + products.get(0).getCategory());
         }
 
         imhome.setVisibility(View.VISIBLE);
