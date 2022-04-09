@@ -25,4 +25,5 @@ public class Constant {
     public static final String CREATE_TICKET = HOME+"/tickets/create";
     public static final String GET_CURRENT_TICKETS = HOME+"/ticketsOpen";
     public static final String GET_CLOSED_TICKETS = HOME+"/ticketsClosed";
+    public static final String GET_BILLING = HOME+"/facturacion";
 }

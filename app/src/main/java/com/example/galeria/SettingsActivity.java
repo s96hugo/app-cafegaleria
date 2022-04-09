@@ -76,6 +76,12 @@ public class SettingsActivity extends AppCompatActivity {
                         break;
 
 
+                case 3:
+                    intent = new Intent(SettingsActivity.this, BillingActivity.class);
+                    startActivity(intent);
+                    break;
+
+
                 case 4:
                         intent = new Intent(SettingsActivity.this, UserActivity.class);
                         startActivity(intent);

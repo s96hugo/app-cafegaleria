@@ -13,6 +13,11 @@
         android:theme="@style/Theme.Galeria"
         android:usesCleartextTraffic="true">
         <activity
+            android:name=".BillingActivity"
+            android:exported="true"
+            android:label="Facturación"
+            android:parentActivityName=".SettingsActivity"/>
+        <activity
             android:name=".TicketResumeActivity"
             android:exported="true"
             android:theme="@style/Theme.Galeria.NoActionBar" />
