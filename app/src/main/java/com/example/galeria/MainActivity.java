@@ -18,7 +18,6 @@ import android.widget.ImageButton;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
-
 import com.android.volley.AuthFailureError;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
@@ -29,11 +28,9 @@ import com.android.volley.toolbox.Volley;
 import com.example.galeria.models.Table;
 import com.example.galeria.models.Ticket;
 import com.google.gson.Gson;
-
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -41,22 +38,19 @@ import java.util.Map;
 
 public class MainActivity extends AppCompatActivity {
 
-    private static String mesaStatic;
-    ImageButton setting, ref;
-    TextView nombre, email;
-    boolean cb1,cb2,cb3,cb4,cm1,cm2,cm3,cm4,cm5,cp1,cp2,cp3,cp4,cp5, cll;
-    Button b1,b2,b3,b4,m1,m2,m3,m4, m5,p1,p2,p3,p4,p5, ll;
-    Ticket tb1, tb2, tb3, tb4, tm1, tm2, tm3, tm4, tm5, tp1, tp2, tp3, tp4, tp5, tll;
+    private boolean cb1,cb2,cb3,cb4,cm1,cm2,cm3,cm4,cm5,cp1,cp2,cp3,cp4,cp5, cll;   //Check booleano si hay ticket activo en cada mesa
+    private Button b1,b2,b3,b4,m1,m2,m3,m4, m5,p1,p2,p3,p4,p5, ll;      //Botones mesa (interfaz gráfica)
+    private Ticket tb1, tb2, tb3, tb4, tm1, tm2, tm3, tm4, tm5, tp1, tp2, tp3, tp4, tp5, tll;
     private SharedPreferences sharedPreferences;
-    private List<Ticket> tickets;
-    private RequestQueue rq;
+    private List<Ticket> tickets;       //Lista con los tickets devueltos del servidor
+    private RequestQueue requestQueue;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         sharedPreferences = getApplicationContext().getSharedPreferences("user", Context.MODE_PRIVATE);
-        rq = Volley.newRequestQueue(this);
+        requestQueue = Volley.newRequestQueue(this);
 
         b1 = findViewById(R.id.bb1);
         b2 = findViewById(R.id.bb2);
@@ -74,24 +68,27 @@ public class MainActivity extends AppCompatActivity {
         p5 = findViewById(R.id.bp5);
         ll = findViewById(R.id.bll);
 
-        nombre = findViewById(R.id.tvNombre);
-        email = findViewById(R.id.tvEmail);
-        setting = findViewById(R.id.buttonSettings);
-        ref = findViewById(R.id.ibRefresh);
+        //Mostrado en la parte superior derecha. Info del usuario
+        TextView email = findViewById(R.id.tvEmail);
+        TextView nombre = findViewById(R.id.tvNombre);
+
+        //Botones ajustes y refrescar
+        ImageButton setting = findViewById(R.id.buttonSettings);
+        ImageButton ref = findViewById(R.id.ibRefresh);
 
         tickets = new ArrayList<>();
         nombre.setText(sharedPreferences.getString("name", ""));
         email.setText(sharedPreferences.getString("email", ""));
 
+        //Función del botón setting -> te lleva a SettingsActivity
         setting.setOnClickListener(view -> {
             Intent intent = new Intent(MainActivity.this, SettingsActivity.class);
             startActivity(intent);
             onPause();
         });
 
-        ref.setOnClickListener(view -> {
-            getTickets();
-        });
+        //Función del botón ref -> Refresca los tickets activos (pensado para multiusuario)
+        ref.setOnClickListener(view ->  getTickets() );
     }
     @Override
     protected void onResume() {
@@ -99,52 +96,42 @@ public class MainActivity extends AppCompatActivity {
         getTickets();
     }
 
+    /**
+     * Trae los tickets activos del servidor, los instacia mediante la librería gson
+     * y los añade al arraylist<Ticket> tickets. Primero elimina la lista de tickets
+     * por si se está refrescando para evitar duplicidades.
+     * Una vez añadidos los tickets a la lista se llama al metodo refreshMainScreen()
+     */
     private void getTickets() {
         tickets.clear();
-
         JsonObjectRequest req = new JsonObjectRequest(Request.Method.GET,
                 Constant.GET_CURRENT_TICKETS,
                 null,
-                new Response.Listener<JSONObject>() {
-                    @Override
-                    public void onResponse(JSONObject response) {
-                        try {
-                            if (response.getBoolean("success")) {
-
-                                JSONArray listTick = new JSONArray(response.getString("tickets"));
-
-                                for(int i = 0; i< listTick.length();i++){
-                                    JSONObject tick = listTick.getJSONObject(i);
-                                    Gson gson = new Gson();
-                                    Ticket ticket = gson.fromJson(tick.toString(), Ticket.class);
-                                    tickets.add(ticket);
-                                }
-
-                                refreshMainScreen();
-
-
-                            } else {
-
-                                if(!response.getBoolean("token")){
-                                    Toast.makeText(getApplicationContext(), "Sesión caducada", Toast.LENGTH_SHORT).show();
-                                    Intent intent = new Intent(MainActivity.this, LoginActivity.class);
-                                    startActivity(intent);
-                                } else {
-                                    Toast.makeText(getApplicationContext(), "Error inesperado", Toast.LENGTH_SHORT).show();
-                                }
-
+                response -> {
+                    try {
+                        if (response.getBoolean("success")) {
+                            JSONArray listTick = new JSONArray(response.getString("tickets"));
+                            for(int i = 0; i< listTick.length();i++){
+                                JSONObject tick = listTick.getJSONObject(i);
+                                Gson gson = new Gson();
+                                Ticket ticket = gson.fromJson(tick.toString(), Ticket.class);
+                                tickets.add(ticket);
                             }
-                        } catch (JSONException e) {
-                            Toast.makeText(getApplicationContext(), e.toString(), Toast.LENGTH_SHORT).show();
-                            e.printStackTrace();
+                            refreshMainScreen();
+                        } else {
+                            if(!response.getBoolean("token")){
+                                Toast.makeText(getApplicationContext(), "Sesión caducada", Toast.LENGTH_SHORT).show();
+                                Intent intent = new Intent(MainActivity.this, LoginActivity.class);
+                                startActivity(intent);
+                            } else {
+                                Toast.makeText(getApplicationContext(), "Error inesperado", Toast.LENGTH_SHORT).show();
+                            }
                         }
+                    } catch (JSONException e) {
+                        Toast.makeText(getApplicationContext(), e.toString(), Toast.LENGTH_SHORT).show();
+                        e.printStackTrace();
                     }
-                }, new Response.ErrorListener() {
-            @Override
-            public void onErrorResponse(VolleyError error) {
-                Toast.makeText(getApplicationContext(), "Error de conexión o datos incorrectos", Toast.LENGTH_SHORT).show();
-            }
-        }) {
+                }, error -> Toast.makeText(getApplicationContext(), "Error de conexión o datos incorrectos", Toast.LENGTH_SHORT).show()) {
             @Override
             public Map<String, String> getHeaders() throws AuthFailureError {
                 String token = sharedPreferences.getString("token", "");
@@ -153,81 +140,72 @@ public class MainActivity extends AppCompatActivity {
                 return map;
             }
         };
-        rq.add(req);
-
+        requestQueue.add(req);
     }
 
+    /**
+     * Dialogo que aparece cuando vas a crear un nuevo ticket. Si el id es 15 es para llevar.
+     * El botón llama al endpoint crear ticket con el id de la mesa.
+     * @param id, de la mesa.
+     * @param mesa, usado para a la hora de abrir el ticket, que aparezca el nombre.
+     */
     public void showCreateTicketDialog(int id, String mesa){
         final Dialog dialog = new Dialog(MainActivity.this);
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
         dialog.setCancelable(true);
         dialog.setContentView(R.layout.ticket_dialog);
-
         Button bticket = dialog.findViewById(R.id.bCreateTicket);
         TextView tvmesa = dialog.findViewById(R.id.tvMesa);
-
         if(id == 15){
             tvmesa.setText("para " + mesa);
         } else {
             tvmesa.setText("en " + mesa);
         }
-
         dialog.show();
-
         bticket.setOnClickListener(view -> {
             createTicket(id, mesa);
             dialog.dismiss();
         });
-
     }
 
+    /**
+     * Llama al endpoint crear ticket a partir del id de la mesa. Si success true, se abre el  nuevo
+     * pedido de esa mesa. Si success es false puede ser que el token haya caducado, o que ya haya
+     * un ticket activo en esa mesa.
+     * @param table_id, requerida para el endpoint
+     * @param mesa, String que se le pasa al activity order para mostrarte el nombre de la mesa
+     */
     public void createTicket(int table_id, String mesa){
-        Map<String, String> datos = new HashMap<String, String>();
+        Map<String, String> datos = new HashMap<>();
         datos.put("table_id", String.valueOf(table_id));
-
         JSONObject datosJs = new JSONObject(datos);
-
         JsonObjectRequest req = new JsonObjectRequest(Request.Method.POST,
                 Constant.CREATE_TICKET,
                 datosJs,
-                new Response.Listener<JSONObject>() {
-                    @Override
-                    public void onResponse(JSONObject response) {
-                        try {
-                            if (response.getBoolean("success")) {
-                                JSONObject ticketJS = response.getJSONObject("ticket");
-                                Gson gson = new Gson();
-                                Ticket ticket = gson.fromJson(ticketJS.toString(), Ticket.class);
-                                Intent intent = new Intent(MainActivity.this, OrderActivity.class);
-                                intent.putExtra("ticket", ticket);
-                                intent.putExtra("pedido", mesa);
+                response -> {
+                    try {
+                        if (response.getBoolean("success")) {
+                            JSONObject ticketJS = response.getJSONObject("ticket");
+                            Gson gson = new Gson();
+                            Ticket ticket = gson.fromJson(ticketJS.toString(), Ticket.class);
+                            Intent intent = new Intent(MainActivity.this, OrderActivity.class);
+                            intent.putExtra("ticket", ticket);
+                            intent.putExtra("pedido", mesa);
+                            startActivity(intent);
+                        } else {
+                            if(!response.getBoolean("token")){
+                                Toast.makeText(getApplicationContext(), "Sesión caducada", Toast.LENGTH_SHORT).show();
+                                Intent intent = new Intent(MainActivity.this, LoginActivity.class);
                                 startActivity(intent);
-                                //onPause();
-
                             } else {
-
-                                if(!response.getBoolean("token")){
-                                    Toast.makeText(getApplicationContext(), "Sesión caducada", Toast.LENGTH_SHORT).show();
-                                    Intent intent = new Intent(MainActivity.this, LoginActivity.class);
-                                    startActivity(intent);
-
-                                } else {
-                                    Toast.makeText(getApplicationContext(), "Ya existe un ticket en esta mesa", Toast.LENGTH_LONG).show();
-                                }
+                                Toast.makeText(getApplicationContext(), "Ya existe un ticket en esta mesa", Toast.LENGTH_LONG).show();
                             }
-
-                        } catch (JSONException e) {
-                            Toast.makeText(getApplicationContext(), e.toString(), Toast.LENGTH_SHORT).show();
-                            e.printStackTrace();
                         }
-
+                    } catch (JSONException e) {
+                        Toast.makeText(getApplicationContext(), e.toString(), Toast.LENGTH_SHORT).show();
+                        e.printStackTrace();
                     }
-                }, new Response.ErrorListener() {
-            @Override
-            public void onErrorResponse(VolleyError error) {
-                Toast.makeText(getApplicationContext(), "Error de conexión o datos incorrectos", Toast.LENGTH_SHORT).show();
-            }
-        }) {
+                }, error -> Toast.makeText(getApplicationContext(), "Error de conexión o datos incorrectos", Toast.LENGTH_SHORT).show()) {
         @Override
         public Map<String, String> getHeaders() throws AuthFailureError {
             String token = sharedPreferences.getString("token", "");
@@ -235,20 +213,17 @@ public class MainActivity extends AppCompatActivity {
             map.put("Authorization", "Bearer " + token);
             return map;
         }};
-        rq.add(req);
+        requestQueue.add(req);
     }
 
     @Override
     public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
         super.onCreateContextMenu(menu, v, menuInfo);
-        int a = v.getId();
         getMenuInflater().inflate(R.menu.changetable_menu, menu);
     }
 
     @Override
     public boolean onContextItemSelected(@NonNull MenuItem item) {
-
-        AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo) item.getMenuInfo();
         switch (item.getItemId()){
             case R.id.option_1:
                 showChangeTableDialog();
@@ -256,7 +231,6 @@ public class MainActivity extends AppCompatActivity {
             default:
                 return super.onContextItemSelected(item);
         }
-
     }
 
     private void showChangeTableDialog() {
@@ -369,12 +343,20 @@ public class MainActivity extends AppCompatActivity {
                 map.put("Authorization", "Bearer " + token);
                 return map;
             }};
-        rq.add(req);
+        requestQueue.add(req);
 
     }
 
+    /**
+     * refreshMainScreen: Las mesas, por defecto verdes, se cambian a rojo si hay ticket activo a través.
+     * Para ello se itera sobre la lista de tickets activos y si lo hay en una mesa, se le asocia/cambia a
+     * su check, ticket, y boton (nuevo color) correspondiente. Una vez finalizado este proceso se crea la
+     * funcionalidad de los botones(mesas) si hay ticket activo abre el ticket, si no aparece el dialog de crear
+     * ticket.
+     *
+     */
     private void refreshMainScreen(){
-
+        //Los checks de si hy ticket activo en mesa se inicilalizan a true.
         cb1 = true;
         cb2 = true;
         cb3 = true;
@@ -391,6 +373,7 @@ public class MainActivity extends AppCompatActivity {
         cp5 = true;
         cll = true;
 
+        //Los tickets por mesa nulos en un principio.
         tb1 = null;
         tb2 = null;
         tb3 = null;
@@ -407,6 +390,7 @@ public class MainActivity extends AppCompatActivity {
         tp5 = null;
         tll = null;
 
+        //Los botones verde (disponibles)
         b1.setBackgroundColor(getResources().getColor(R.color.green));
         b2.setBackgroundColor(getResources().getColor(R.color.green));
         b3.setBackgroundColor(getResources().getColor(R.color.green));
