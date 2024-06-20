@@ -159,7 +159,8 @@ public class ProductActivity extends AppCompatActivity implements OnRefreshViewL
                                             pr.getString("name"),
                                             pr.getString("price"),
                                             pr.getInt("category_id"),
-                                            pr.getString("category")) );
+                                            pr.getString("category"),
+                                            pr.getInt("screenType")) );
                                 }
 
                                 refreshProduct(products,categorias);
@@ -215,7 +216,8 @@ public class ProductActivity extends AppCompatActivity implements OnRefreshViewL
                                                     pr.getString("name"),
                                                     pr.getString("price"),
                                                     pr.getInt("category_id"),
-                                                    pr.getString("category")) );
+                                                    pr.getString("category"),
+                                                    pr.getInt("screenType")) );
                         }
 
                         JSONArray listCat = new JSONArray(res.getString("categories"));

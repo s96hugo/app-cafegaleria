@@ -9,14 +9,15 @@ public class Product implements Comparable<Product>, Serializable {
     private double price;
     private int category_id;
     private String category;
+    private int screenType;
 
-
-    public Product(int id, String name, String price, int category_id, String category) {
+    public Product(int id, String name, String price, int category_id, String category, int screenType) {
         this.id = id;
         this.name = name;
         this.price = Double.parseDouble(price);
         this.category_id = category_id;
         this.category = category;
+        this.screenType = screenType;
     }
 
     public int getId() {
@@ -59,6 +60,13 @@ public class Product implements Comparable<Product>, Serializable {
         this.category = category;
     }
 
+    public int getScreenType() {
+        return screenType;
+    }
+
+    public void setScreenType(int screenType) {
+        this.screenType = screenType;
+    }
 
     @Override
     public boolean equals(Object o) {

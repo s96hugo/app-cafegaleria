@@ -174,7 +174,8 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ProductV
                                             pr.getString("name"),
                                             pr.getString("price"),
                                             pr.getInt("category_id"),
-                                            pr.getString("category")) );
+                                            pr.getString("category"),
+                                            pr.getInt("screenType")) );
                                 }
 
                                 orvl = (OnRefreshViewListener)context;

@@ -2,21 +2,17 @@ package com.example.galeria;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.media.Image;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ImageView;
 import android.widget.Toast;
 
-import com.android.volley.AuthFailureError;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
-import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 
 import org.json.JSONException;
@@ -28,29 +24,32 @@ import java.util.Map;
 
 public class LoginActivity extends AppCompatActivity {
 
-    Button iniciar;
-    EditText email, password;
-    RequestQueue rq;
+    private EditText email, password;
+    private RequestQueue requestQueue;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
 
-        rq = Volley.newRequestQueue(this);
+        requestQueue = Volley.newRequestQueue(this);
 
         email = findViewById(R.id.eTEmail);
         password = findViewById(R.id.eTPassword);
-        iniciar = findViewById(R.id.BIniciar);
+        Button iniciar = findViewById(R.id.BIniciar);
 
         iniciar.setOnClickListener(view -> {
             if(validate()){
                 login();
             }
         });
-
     }
 
+    /**
+     * Valida si el email es correcto o incorrecto. Se considera incorrecto a enviar
+     * alguno de los campos en blanco. Muestra un toast con el mensaje de error.
+     * @return true si es correcto, false en caso contrario
+     */
     private boolean validate(){
         CharSequence text;
         if(email.getText().toString().isEmpty()){
@@ -68,11 +67,14 @@ public class LoginActivity extends AppCompatActivity {
         return true;
     }
 
+    /**
+     * ENDPOINT Login, devuelve el token, junto con los datos de usuario si el login
+     * es correcto. Guarda ambos datos en un objeto sharedpreferences.
+     */
     private void login(){
-        Map<String, String> datos = new HashMap<String, String>();
+        Map<String, String> datos = new HashMap<>();
         datos.put("email", email.getText().toString().trim().toLowerCase());
         datos.put("password", password.getText().toString().trim());
-
         JSONObject datosJs = new JSONObject(datos);
 
         JsonObjectRequest req = new JsonObjectRequest(Request.Method.POST,
@@ -83,10 +85,7 @@ public class LoginActivity extends AppCompatActivity {
                     public void onResponse(JSONObject response) {
                         try {
                             if (response.getBoolean("success")) {
-
                                 JSONObject user = response.getJSONObject("user");
-
-                                //clave valor
                                 SharedPreferences userPref = getApplicationContext().getSharedPreferences("user", MODE_PRIVATE);
                                 SharedPreferences.Editor editor = userPref.edit();
                                 editor.putString("token", response.getString("token"));
@@ -94,7 +93,6 @@ public class LoginActivity extends AppCompatActivity {
                                 editor.putString("name", user.getString("name"));
                                 editor.putString("email", user.getString("email"));
                                 editor.apply();
-                                //Toast.makeText(getApplicationContext(), "login success", Toast.LENGTH_SHORT).show();
 
                                 Intent intent = new Intent(LoginActivity.this, MainActivity.class);
                                 startActivity(intent);
@@ -107,7 +105,6 @@ public class LoginActivity extends AppCompatActivity {
                             Toast.makeText(getApplicationContext(), e.toString(), Toast.LENGTH_SHORT).show();
                             e.printStackTrace();
                         }
-
                     }
                 }, new Response.ErrorListener() {
             @Override
@@ -115,7 +112,7 @@ public class LoginActivity extends AppCompatActivity {
                 Toast.makeText(getApplicationContext(), "Error de conexión", Toast.LENGTH_SHORT).show();
             }
         });
-        rq.add(req);
+        requestQueue.add(req);
     }
 
     @Override
