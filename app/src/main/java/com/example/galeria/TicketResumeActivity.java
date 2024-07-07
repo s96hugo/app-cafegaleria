@@ -126,7 +126,7 @@ public class TicketResumeActivity extends AppCompatActivity {
         Spinner s = dialog.findViewById(R.id.sTipoPago);
         Button b = dialog.findViewById(R.id.bPago);
 
-        String[] payMethod = {"Efectivo","Tarjeta","Impago"};
+        String[] payMethod = {"Efectivo","Tarjeta","Bizum"};
 
         ArrayAdapter paymentAdapter = new ArrayAdapter(this, R.layout.support_simple_spinner_dropdown_item, payMethod);
         paymentAdapter.setDropDownViewResource(R.layout.support_simple_spinner_dropdown_item);

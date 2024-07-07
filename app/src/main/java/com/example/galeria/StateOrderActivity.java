@@ -356,7 +356,7 @@ public class StateOrderActivity extends AppCompatActivity {
             ArrayAdapter productAdapter = new ArrayAdapter(this, R.layout.support_simple_spinner_dropdown_item, products);
             productAdapter.setDropDownViewResource(R.layout.support_simple_spinner_dropdown_item);
             producto.setAdapter(productAdapter);
-            producto.setSelection(products.indexOf(productOrder == null ? 0 :new Product(productOrder.getProduct_id(), "", "1.0",1,"")));
+            producto.setSelection(products.indexOf(productOrder == null ? 0 :new Product(productOrder.getProduct_id(), "", "1.0",1,"", 1)));
 
         } else {
             List<Product> productsFiltrado = new ArrayList<>();

@@ -364,7 +364,8 @@ public class OrderActivity extends AppCompatActivity implements OnRefreshDataOrd
                                             pr.getString("name"),
                                             pr.getString("price"),
                                             pr.getInt("category_id"),
-                                            pr.getString("category")) );
+                                            pr.getString("category"),
+                                            pr.getInt("screenType")) );
                                 }
 
                                 //ProductOrder - State

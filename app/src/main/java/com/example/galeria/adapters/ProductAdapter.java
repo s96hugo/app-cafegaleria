@@ -20,6 +20,7 @@ import android.widget.Filterable;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.Spinner;
+import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -118,17 +119,21 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ProductV
         EditText price = dialog.findViewById(R.id.etPrice);
         Button addd = dialog.findViewById(R.id.bsave);
         Spinner category = (Spinner)dialog.findViewById(R.id.SpinnerCat);
+        Switch screenType = dialog.findViewById(R.id.id_switch_screenType);
 
         ArrayAdapter categoryAdapter = new ArrayAdapter(context, R.layout.support_simple_spinner_dropdown_item, categorias);
         categoryAdapter.setDropDownViewResource(R.layout.support_simple_spinner_dropdown_item);
         category.setAdapter(categoryAdapter);
-
+        if(product.getScreenType()==1){
+            screenType.setSelected(false);
+            screenType.setChecked(false);
+        }else {
+            screenType.setSelected(true);
+            screenType.setChecked(true);
+        }
         //Que salga el spinner de editar la categoría previa
         category.setSelection(categorias.indexOf(new Category(product.getCategory_id(), product.getCategory())));
         //category.setSelection(product.getCategory_id()-1);
-
-
-
 
         name.setText(product.getName());
         price.setText(String.valueOf(product.getPrice()));
@@ -141,13 +146,13 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ProductV
             if(name.getText().toString().isEmpty() || price.getText().toString().isEmpty() || category.getSelectedItem()==null){
                 Toast.makeText(context, "Rellene todos los campos", Toast.LENGTH_SHORT).show();
             } else{
-                editProduct(product.getId(), name.getText().toString(), price.getText().toString(), String.valueOf(c.getId()));
+                editProduct(product.getId(), name.getText().toString(), price.getText().toString(), String.valueOf(c.getId()), screenType.isChecked());
                 dialog.dismiss();
             }
         });
     }
 
-    private void editProduct(int id, String name, String price, String category) {
+    private void editProduct(int id, String name, String price, String category, boolean screenType) {
         RequestQueue rq = Volley.newRequestQueue(context);
         SharedPreferences sharedPreferences = context.getSharedPreferences("user", Context.MODE_PRIVATE);
 
@@ -155,6 +160,7 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ProductV
         datos.put("name", name.substring(0, 1).toUpperCase(Locale.ROOT) + name.substring(1));
         datos.put("price", price);
         datos.put("category_id", category);
+        datos.put("screenType", screenType == true ? "2" : "1"); //Barra o cocina
         JSONObject datosJs = new JSONObject(datos);
 
         JsonObjectRequest req = new JsonObjectRequest(Request.Method.POST,
@@ -174,7 +180,8 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ProductV
                                             pr.getString("name"),
                                             pr.getString("price"),
                                             pr.getInt("category_id"),
-                                            pr.getString("category")) );
+                                            pr.getString("category"),
+                                            pr.getInt("screenType")) );
                                 }
 
                                 orvl = (OnRefreshViewListener)context;
